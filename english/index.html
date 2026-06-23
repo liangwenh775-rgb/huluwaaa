@@ -1,0 +1,3219 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>英语刷题系统</title>
+  <style>
+:root {
+  --bg: #f6f7f4;
+  --panel: #ffffff;
+  --ink: #17211d;
+  --muted: #657069;
+  --line: #dfe4dc;
+  --accent: #006f63;
+  --accent-2: #c43d2f;
+  --gold: #efb700;
+  --ok: #148642;
+  --bad: #ba2b2b;
+  --warn: #a66500;
+  --shadow: 0 16px 38px rgba(20, 32, 28, 0.11);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  font-family: Arial, "Microsoft YaHei", sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+button, input, select, textarea { font: inherit; }
+button {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+button.danger { background: var(--accent-2); color: #fff; border-color: var(--accent-2); }
+button.icon { width: 38px; height: 38px; padding: 0; display: inline-grid; place-items: center; }
+.app { min-height: 100vh; display: grid; grid-template-columns: 320px 1fr; }
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: #fbfcfa;
+  padding: 22px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: auto;
+}
+.brand { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand h1 { margin: 0; font-size: 22px; letter-spacing: 0; }
+.egg {
+  margin: 16px 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #fff;
+  background: #ff006e;
+  font-weight: 800;
+  text-align: center;
+  border: 2px solid #ffbe0b;
+}
+.meta { color: var(--muted); font-size: 13px; line-height: 1.55; }
+.control { margin-top: 18px; }
+.control label { display: block; margin-bottom: 7px; color: var(--muted); font-size: 13px; }
+select, input[type="text"] {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  padding: 10px 11px;
+}
+.segmented { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.segmented button { padding: 8px 6px; }
+.segmented button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 18px; }
+.stat { border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: #fff; }
+.stat strong { display: block; font-size: 18px; }
+.stat span { color: var(--muted); font-size: 12px; }
+.main { padding: 26px; min-width: 0; }
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.toolbar-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.progress {
+  height: 10px;
+  background: #e9eee7;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+.progress > div { height: 100%; width: 0; background: var(--accent); transition: width 180ms ease; }
+.accuracy-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 12px;
+  align-items: center;
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.accuracy-card strong {
+  color: var(--ink);
+  font-size: 20px;
+}
+.accuracy-bar {
+  grid-column: 1 / -1;
+  height: 12px;
+  background: #e9eee7;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.accuracy-bar > div {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--bad), var(--gold), var(--ok));
+  transition: width 180ms ease;
+}
+.workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
+.question-panel, .side-panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+.question-panel { padding: 22px; min-height: 520px; }
+.side-panel { padding: 16px; }
+.pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 9px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.pill.warn { color: #fff; background: var(--warn); border-color: var(--warn); }
+.stem { font-size: 22px; line-height: 1.55; margin: 16px 0 20px; }
+.reading-context {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 0 0 16px;
+}
+.context-box {
+  max-height: 240px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  background: #fbfcfa;
+  border-radius: 8px;
+  padding: 12px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  font-size: 14px;
+}
+.options { display: grid; gap: 10px; margin: 16px 0; }
+.option {
+  text-align: left;
+  min-height: 44px;
+  line-height: 1.35;
+}
+.option.selected { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.option.correct { background: #e8f6ed; border-color: var(--ok); }
+.option.wrong { background: #fae7e7; border-color: var(--bad); }
+.answer-input { max-width: 680px; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.feedback {
+  margin-top: 18px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #fbfcfa;
+  min-height: 48px;
+}
+.feedback.ok { border-color: var(--ok); background: #e8f6ed; }
+.feedback.bad { border-color: var(--bad); background: #fae7e7; }
+.analysis {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+.analysis ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+.analysis li { margin: 4px 0; }
+.mini-title { margin: 0 0 10px; font-size: 14px; color: var(--muted); }
+.list { display: grid; gap: 8px; max-height: 390px; overflow: auto; }
+.jump {
+  display: grid;
+  grid-template-columns: 48px 1fr 28px;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 8px;
+}
+.jump.active { border-color: var(--accent); background: #edf7f5; }
+.dot { width: 12px; height: 12px; border-radius: 50%; background: #ccd5cf; }
+.dot.ok { background: var(--ok); }
+.dot.bad { background: var(--bad); }
+.muted { color: var(--muted); }
+.empty { text-align: center; padding: 60px 20px; color: var(--muted); }
+@media (max-width: 980px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; }
+  .workspace { grid-template-columns: 1fr; }
+  .reading-context { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .main, .sidebar { padding: 16px; }
+  .toolbar { align-items: stretch; flex-direction: column; }
+  .stem { font-size: 18px; }
+  .question-panel { padding: 16px; min-height: auto; }
+}
+.toolbar-actions #prevBtn,
+.toolbar-actions #nextBtn,
+.toolbar-actions #checkBtn,
+.toolbar-actions #revealBtn { display: none; }
+.workspace { grid-template-columns: minmax(0, 1fr) 260px; }
+.question-panel {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  min-height: 0;
+}
+.question-list { display: grid; gap: 16px; }
+.question-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+  scroll-margin-top: 18px;
+}
+.question-card.answered-ok { border-color: rgba(20, 134, 66, 0.55); }
+.question-card.answered-bad { border-color: rgba(186, 43, 43, 0.55); }
+.question-card .stem { font-size: 19px; }
+.question-card .feedback { display: none; }
+.question-card .feedback.visible { display: block; }
+.question-card .actions { margin-top: 12px; }
+.question-card .reading-context { grid-template-columns: 1fr; }
+.question-card .context-box { max-height: 210px; }
+.reading-context-wrap {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+  margin-bottom: 14px;
+}
+.reading-context-wrap summary {
+  cursor: pointer;
+  padding: 10px 12px;
+  color: var(--accent);
+  font-weight: 700;
+}
+.reading-context-wrap .reading-context {
+  padding: 0 12px 12px;
+  margin: 0;
+}
+.question-index {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #edf2ee;
+  font-weight: 700;
+  color: var(--accent);
+}
+.flow-note { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+@media (max-width: 980px) {
+  .workspace { grid-template-columns: 1fr; }
+  .side-panel { position: static; }
+}
+@media (max-width: 560px) {
+  .question-card { padding: 14px; }
+  .question-card .stem { font-size: 17px; }
+}
+</style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>英语刷题系统</h1>
+        <button id="shuffleBtn" class="icon" type="button" title="随机排序">↻</button>
+      </div>
+      <div class="egg">刘将大帅比</div>
+      <p class="meta">单文件离线运行。数据来自当前文件夹内 Word 文档，未读取 .bak 或 .broken 备份文件。</p>
+
+      <div class="control">
+        <label>题型</label>
+        <div class="segmented">
+          <button class="active" data-type="all" type="button">全部</button>
+          <button data-type="vocabulary" type="button">词汇</button>
+          <button data-type="listening" type="button">听力</button>
+        </div>
+        <div class="segmented" style="margin-top:6px; grid-template-columns: 1fr;">
+          <button data-type="reading" type="button">阅读</button>
+        </div>
+      </div>
+
+      <div class="control">
+        <label for="statusFilter">校验状态</label>
+        <select id="statusFilter">
+          <option value="all">全部状态</option>
+          <option value="verified">仅已校验</option>
+          <option value="unverified">需人工核对</option>
+        </select>
+      </div>
+
+      <div class="control">
+        <label for="sectionFilter">章节 / Passage</label>
+        <select id="sectionFilter"></select>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><strong id="totalCount">0</strong><span>总题数</span></div>
+        <div class="stat"><strong id="sourceCount">0</strong><span>源文件</span></div>
+        <div class="stat"><strong id="verifiedCount">0</strong><span>已校验</span></div>
+        <div class="stat"><strong id="unverifiedCount">0</strong><span>需核对</span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="toolbar">
+        <div>
+          <strong><span id="currentCount">0</span> / <span id="filteredCount">0</span></strong>
+          <span class="muted">已答 / 当前题数，竖向滑动练习</span>
+        </div>
+        <div class="toolbar-actions">
+          <button id="shuffleBtnInline" type="button">随机排序</button>
+          <button id="resetBtn" class="danger" type="button">清空记录</button>
+        </div>
+      </div>
+      <div class="progress"><div id="bar"></div></div>
+      <div class="accuracy-card">
+        <span>正确率</span>
+        <strong id="accuracyRate">0%</strong>
+        <span id="accuracyDetail">还没有答题记录</span>
+        <span>错题 <strong id="wrongCount">0</strong></span>
+        <div class="accuracy-bar"><div id="accuracyBar"></div></div>
+      </div>
+      <div class="workspace">
+        <section id="questionPanel" class="question-panel"></section>
+        <aside class="side-panel">
+          <p class="mini-title">答题记录：<strong id="doneCount">0</strong> 已答，<strong id="rightCount">0</strong> 正确，<strong id="wrongCountSide">0</strong> 错题</p>
+          <div id="jumpList" class="list"></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+  <script>
+const DATA_AUDIT = {
+  "generatedFrom": [
+    "听力练习/Unit 4.docx",
+    "听力练习/uint 5.docx",
+    "听力练习/uint 6.docx",
+    "词汇练习/词汇1.docx",
+    "词汇练习/词汇2.docx",
+    "阅读练习/阅读理解整理.docx"
+  ],
+  "missingRequiredSources": [
+    "阅读练习/题目与正确答案对应整理.docx"
+  ],
+  "counts": {
+    "total": 160,
+    "vocabulary": 76,
+    "listening": 54,
+    "reading": 30,
+    "verified": 130,
+    "unverified": 30
+  },
+  "validationErrors": []
+};
+const QUIZ_DB = [
+  {
+    "id": "vocabulary_unit_1_ocean_exploration_q1",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 1 Ocean Exploration",
+    "questionNo": 1,
+    "stem": "Autumn has arrived here _________ a hot summer with unexpected speed.",
+    "answer": "on the heels of",
+    "status": "verified",
+    "stemTranslation": "秋天紧随着炎热的夏天，以出人意料的速度来到了这里。",
+    "answerTranslation": "紧随其后"
+  },
+  {
+    "id": "vocabulary_unit_1_ocean_exploration_q2",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 1 Ocean Exploration",
+    "questionNo": 2,
+    "stem": "As a diplomat, he has witnessed the birth of the new nation and is well placed to _________ its growth during this critical period of its history.",
+    "answer": "observe",
+    "status": "verified",
+    "stemTranslation": "作为一名外交官，他见证了这个新国家的诞生，并且非常适合在其历史关键时期观察它的发展。",
+    "answerTranslation": "观察；遵守；庆祝"
+  },
+  {
+    "id": "vocabulary_unit_1_ocean_exploration_q3",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 1 Ocean Exploration",
+    "questionNo": 3,
+    "stem": "When you make travel plans, you’d better _________ that every flight can be late.",
+    "answer": "assume",
+    "status": "verified",
+    "stemTranslation": "制订旅行计划时，你最好假定每个航班都可能晚点。",
+    "answerTranslation": "假定；认为"
+  },
+  {
+    "id": "vocabulary_unit_1_ocean_exploration_q4",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 1 Ocean Exploration",
+    "questionNo": 4,
+    "stem": "“I have made it quite clear _________ that I want to be part of the team,” John said.",
+    "answer": "from the beginning",
+    "status": "verified",
+    "stemTranslation": "约翰说：“我从一开始就已经说得很清楚，我想成为团队的一员。”",
+    "answerTranslation": "从一开始"
+  },
+  {
+    "id": "vocabulary_unit_1_ocean_exploration_q5",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 1 Ocean Exploration",
+    "questionNo": 5,
+    "stem": "When Alice first came to the country, she was shocked by the way of life there that was totally _________ to her and the _________ environment where local people looked at her with a suspicious eye.",
+    "answer": "alien, hostile",
+    "status": "verified",
+    "stemTranslation": "爱丽丝刚来到这个国家时，被那种对她完全陌生的生活方式和当地人用怀疑眼光看待她的敌对环境震惊了。",
+    "answerTranslation": "陌生的；敌对的"
+  },
+  {
+    "id": "vocabulary_unit_1_ocean_exploration_q6",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 1 Ocean Exploration",
+    "questionNo": 6,
+    "stem": "Andrew made an initial contribution. But there is _________ no firm commitment to further cash payments.",
+    "answer": "as yet",
+    "status": "verified",
+    "stemTranslation": "安德鲁作出了初步贡献。但到目前为止，还没有进一步支付现金的明确承诺。",
+    "answerTranslation": "到目前为止；尚未"
+  },
+  {
+    "id": "vocabulary_unit_1_ocean_exploration_q7",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 1 Ocean Exploration",
+    "questionNo": 7,
+    "stem": "_________ in decades, the leaders of the two nations shook hands and sat down to talk.",
+    "answer": "For the first time",
+    "status": "verified",
+    "stemTranslation": "几十年来第一次，两国领导人握手并坐下来交谈。",
+    "answerTranslation": "第一次"
+  },
+  {
+    "id": "vocabulary_unit_1_ocean_exploration_q8",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 1 Ocean Exploration",
+    "questionNo": 8,
+    "stem": "“Do fish _________ each other?” “Yes. At least many of them do.”",
+    "answer": "feed on",
+    "status": "verified",
+    "stemTranslation": "“鱼会以彼此为食吗？”“会。至少很多鱼会这样。”",
+    "answerTranslation": "以……为食"
+  },
+  {
+    "id": "vocabulary_unit_1_ocean_exploration_q9",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 1 Ocean Exploration",
+    "questionNo": 9,
+    "stem": "Our old classroom building, which was built a century ago, has become a sort of a local _________ .",
+    "answer": "landmark",
+    "status": "verified",
+    "stemTranslation": "我们的老教学楼建于一个世纪前，如今已经成了当地的一种地标。",
+    "answerTranslation": "地标"
+  },
+  {
+    "id": "vocabulary_unit_1_ocean_exploration_q10",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 1 Ocean Exploration",
+    "questionNo": 10,
+    "stem": "The dwarf sees farther than the _________ when he stands on the latter’s shoulder.",
+    "answer": "giant",
+    "status": "verified",
+    "stemTranslation": "侏儒站在巨人的肩膀上时，看得比巨人更远。",
+    "answerTranslation": "巨人"
+  },
+  {
+    "id": "vocabulary_unit_1_ocean_exploration_q11",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 1 Ocean Exploration",
+    "questionNo": 11,
+    "stem": "All these parts are supposed to _________ in this device.",
+    "answer": "fit together",
+    "status": "verified",
+    "stemTranslation": "这些零件应该在这个装置中组合在一起。",
+    "answerTranslation": "组合在一起；配合"
+  },
+  {
+    "id": "vocabulary_unit_1_ocean_exploration_q12",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 1 Ocean Exploration",
+    "questionNo": 12,
+    "stem": "We visited the local markets and saw a wonderful _________ of fruit and vegetables.",
+    "answer": "array",
+    "status": "verified",
+    "stemTranslation": "我们参观了当地市场，看到了琳琅满目的水果和蔬菜。",
+    "answerTranslation": "一系列；大量"
+  },
+  {
+    "id": "vocabulary_unit_1_ocean_exploration_q13",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 1 Ocean Exploration",
+    "questionNo": 13,
+    "stem": "I am afraid this plan of yours does not _________ the company’s overall marketing strategy.",
+    "answer": "fit into",
+    "status": "verified",
+    "stemTranslation": "恐怕你的这个计划不符合公司的整体营销策略。",
+    "answerTranslation": "适合；符合；融入"
+  },
+  {
+    "id": "vocabulary_unit_1_ocean_exploration_q14",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 1 Ocean Exploration",
+    "questionNo": 14,
+    "stem": "Astronauts have brought back _________ of rock from the moon.",
+    "answer": "specimens",
+    "status": "verified",
+    "stemTranslation": "宇航员从月球带回了岩石样本。",
+    "answerTranslation": "样本；标本"
+  },
+  {
+    "id": "vocabulary_unit_1_ocean_exploration_q15",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 1 Ocean Exploration",
+    "questionNo": 15,
+    "stem": "If one wants to _________ the possibilities of Europe’s political future, one needs to examine the development of European culture.",
+    "answer": "explore",
+    "status": "verified",
+    "stemTranslation": "如果一个人想探索欧洲政治未来的各种可能性，就需要考察欧洲文化的发展。",
+    "answerTranslation": "探索；探究"
+  },
+  {
+    "id": "vocabulary_unit_1_ocean_exploration_q16",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 1 Ocean Exploration",
+    "questionNo": 16,
+    "stem": "A set of _________ are installed to control the speed and direction of the vehicle.",
+    "answer": "gears",
+    "status": "verified",
+    "stemTranslation": "安装了一组齿轮来控制车辆的速度和方向。",
+    "answerTranslation": "齿轮"
+  },
+  {
+    "id": "vocabulary_unit_3_job_hunting_q1",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 3 Job Hunting",
+    "questionNo": 1,
+    "stem": "Have you filled in the _________ form for your passport yet?",
+    "answer": "application",
+    "status": "verified",
+    "stemTranslation": "你填好护照申请表了吗？",
+    "answerTranslation": "申请；申请表"
+  },
+  {
+    "id": "vocabulary_unit_3_job_hunting_q2",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 3 Job Hunting",
+    "questionNo": 2,
+    "stem": "Mr. Turner _________ his job as an exceptional TV news reporter to take up dairy farming.",
+    "answer": "quit",
+    "status": "verified",
+    "stemTranslation": "特纳先生辞去了杰出的电视新闻记者工作，转而从事奶牛养殖。",
+    "answerTranslation": "辞职；停止"
+  },
+  {
+    "id": "vocabulary_unit_3_job_hunting_q3",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 3 Job Hunting",
+    "questionNo": 3,
+    "stem": "With all of these medical bills, I just don’t have any more money to _________ .",
+    "answer": "fall back on",
+    "status": "verified",
+    "stemTranslation": "有了这些医疗账单，我已经没有更多钱可以依靠了。",
+    "answerTranslation": "依靠；求助于"
+  },
+  {
+    "id": "vocabulary_unit_3_job_hunting_q4",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 3 Job Hunting",
+    "questionNo": 4,
+    "stem": "At a time of economic _________ , risk taking can seem particularly difficult.",
+    "answer": "uncertainty",
+    "status": "verified",
+    "stemTranslation": "在经济不确定时期，冒险似乎尤其困难。",
+    "answerTranslation": "不确定性"
+  },
+  {
+    "id": "vocabulary_unit_3_job_hunting_q5",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 3 Job Hunting",
+    "questionNo": 5,
+    "stem": "The singer bowed to the fervent audience several times before making her _________ from the stage.",
+    "answer": "exit",
+    "status": "verified",
+    "stemTranslation": "这位歌手在离开舞台前向热情的观众鞠了好几次躬。",
+    "answerTranslation": "离开；出口"
+  },
+  {
+    "id": "vocabulary_unit_3_job_hunting_q6",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 3 Job Hunting",
+    "questionNo": 6,
+    "stem": "You can’t have a(n) _________ discussion if people aren’t listening to each other.",
+    "answer": "productive",
+    "status": "verified",
+    "stemTranslation": "如果人们彼此不倾听，就不可能进行富有成效的讨论。",
+    "answerTranslation": "富有成效的"
+  },
+  {
+    "id": "vocabulary_unit_3_job_hunting_q7",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 3 Job Hunting",
+    "questionNo": 7,
+    "stem": "The effects of the drug on patients’ behavior is extremely difficult to _________ .",
+    "answer": "evaluate",
+    "status": "verified",
+    "stemTranslation": "这种药物对患者行为的影响极难评估。",
+    "answerTranslation": "评估；评价"
+  },
+  {
+    "id": "vocabulary_unit_3_job_hunting_q8",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 3 Job Hunting",
+    "questionNo": 8,
+    "stem": "She was invited to speak at a conference jointly held by two associations, with an offer to cover all her _________ .",
+    "answer": "expenses",
+    "status": "verified",
+    "stemTranslation": "她受邀在两个协会联合举办的会议上发言，对方提出承担她所有的费用。",
+    "answerTranslation": "费用；开支"
+  },
+  {
+    "id": "vocabulary_unit_3_job_hunting_q9",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 3 Job Hunting",
+    "questionNo": 9,
+    "stem": "It is the role of the regulators to promote market confidence and _________ .",
+    "answer": "stability",
+    "status": "verified",
+    "stemTranslation": "监管者的职责是促进市场信心和稳定。",
+    "answerTranslation": "稳定；稳定性"
+  },
+  {
+    "id": "vocabulary_unit_3_job_hunting_q10",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 3 Job Hunting",
+    "questionNo": 10,
+    "stem": "The kids _________ to wash your car — I’m so proud of them for doing it without being told!",
+    "answer": "took it upon themselves",
+    "status": "verified",
+    "stemTranslation": "孩子们主动去洗你的车，我真为他们不用别人吩咐就这么做而自豪！",
+    "answerTranslation": "主动承担；自告奋勇"
+  },
+  {
+    "id": "vocabulary_unit_3_job_hunting_q11",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 3 Job Hunting",
+    "questionNo": 11,
+    "stem": "There was a great sense of _________ among the workers at the decision not to close the factory.",
+    "answer": "relief",
+    "status": "verified",
+    "stemTranslation": "工人们对不关闭工厂的决定感到极大的宽慰。",
+    "answerTranslation": "宽慰；减轻"
+  },
+  {
+    "id": "vocabulary_unit_3_job_hunting_q12",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 3 Job Hunting",
+    "questionNo": 12,
+    "stem": "He _________ his daughter _________ : unless she started looking for jobs he would throw her out of the house.",
+    "answer": "gave, an ultimatum",
+    "status": "verified",
+    "stemTranslation": "他向女儿下了最后通牒：除非她开始找工作，否则他就把她赶出家门。",
+    "answerTranslation": "下最后通牒"
+  },
+  {
+    "id": "vocabulary_unit_3_job_hunting_q13",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 3 Job Hunting",
+    "questionNo": 13,
+    "stem": "Getting my children, 6 and 4, ready for bed required _________ .",
+    "answer": "every ounce of my energy / every ounce of energy",
+    "status": "verified",
+    "stemTranslation": "让我6岁和4岁的孩子准备睡觉耗尽了我全部精力。",
+    "answerTranslation": "全部精力；每一分力气"
+  },
+  {
+    "id": "vocabulary_unit_3_job_hunting_q14",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 3 Job Hunting",
+    "questionNo": 14,
+    "stem": "The government would monitor property prices and _________ its land-sales policies if necessary.",
+    "answer": "fine-tune",
+    "status": "verified",
+    "stemTranslation": "政府将监测房价，并在必要时微调其土地出让政策。",
+    "answerTranslation": "微调"
+  },
+  {
+    "id": "vocabulary_unit_3_job_hunting_q15",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 3 Job Hunting",
+    "questionNo": 15,
+    "stem": "As a computer programmer, you will be _________ moving to a city that is home to a lot of tech companies.",
+    "answer": "better off",
+    "status": "verified",
+    "stemTranslation": "作为一名计算机程序员，搬到一个有许多科技公司的城市会让你处境更好。",
+    "answerTranslation": "处境更好；更有利"
+  },
+  {
+    "id": "vocabulary_unit_6_human_robot_relations_q1",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 6 Human-Robot Relations",
+    "questionNo": 1,
+    "stem": "Some people give a regular monthly donation while others _________ the amount they give.",
+    "answer": "vary",
+    "status": "verified",
+    "stemTranslation": "有些人每月定期捐款，而另一些人则会改变捐款金额。",
+    "answerTranslation": "变化；改变"
+  },
+  {
+    "id": "vocabulary_unit_6_human_robot_relations_q2",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 6 Human-Robot Relations",
+    "questionNo": 2,
+    "stem": "Legislators are _________ additional measures to protect business interests abroad.",
+    "answer": "building in",
+    "status": "verified",
+    "stemTranslation": "立法者正在把额外措施纳入其中，以保护海外商业利益。",
+    "answerTranslation": "把……纳入；内置"
+  },
+  {
+    "id": "vocabulary_unit_6_human_robot_relations_q3",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 6 Human-Robot Relations",
+    "questionNo": 3,
+    "stem": "My Irish heritage _________ to the day when my great-great-great grandfather married the daughter of a wealthy Irish landowner.",
+    "answer": "goes back",
+    "status": "verified",
+    "stemTranslation": "我的爱尔兰血统可以追溯到我的曾曾曾祖父娶了一位富有爱尔兰地主的女儿那一天。",
+    "answerTranslation": "追溯到"
+  },
+  {
+    "id": "vocabulary_unit_6_human_robot_relations_q4",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 6 Human-Robot Relations",
+    "questionNo": 4,
+    "stem": "It was reported that heavy rain led to _________ flash floods throughout the Phoenix, Arizona area yesterday.",
+    "answer": "destructive",
+    "status": "verified",
+    "stemTranslation": "据报道，昨天暴雨在亚利桑那州凤凰城地区引发了破坏性的山洪。",
+    "answerTranslation": "破坏性的"
+  },
+  {
+    "id": "vocabulary_unit_6_human_robot_relations_q5",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 6 Human-Robot Relations",
+    "questionNo": 5,
+    "stem": "The foundations of modern medicine were being laid during the 16th century — namely, by the introduction of _________ instruction in hospitals.",
+    "answer": "clinical",
+    "status": "verified",
+    "stemTranslation": "现代医学的基础在16世纪逐渐奠定，也就是通过在医院引入临床教学奠定的。",
+    "answerTranslation": "临床的"
+  },
+  {
+    "id": "vocabulary_unit_6_human_robot_relations_q6",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 6 Human-Robot Relations",
+    "questionNo": 6,
+    "stem": "Safety features are fully _________ the design of the new vehicles.",
+    "answer": "integrated into",
+    "status": "verified",
+    "stemTranslation": "安全功能已完全融入新车的设计之中。",
+    "answerTranslation": "融入；整合进"
+  },
+  {
+    "id": "vocabulary_unit_6_human_robot_relations_q7",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 6 Human-Robot Relations",
+    "questionNo": 7,
+    "stem": "The man was accused of trying to _________ the school by setting fire to a pile of papers.",
+    "answer": "burn down",
+    "status": "verified",
+    "stemTranslation": "这名男子被指控企图通过点燃一堆纸来烧毁学校。",
+    "answerTranslation": "烧毁"
+  },
+  {
+    "id": "vocabulary_unit_6_human_robot_relations_q8",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 6 Human-Robot Relations",
+    "questionNo": 8,
+    "stem": "Fashion _________ are difficult to predict these days and it’s widely believed that they primarily exist just to sell clothes.",
+    "answer": "trends",
+    "status": "verified",
+    "stemTranslation": "如今时尚趋势很难预测，人们普遍认为它们主要只是为了卖衣服而存在。",
+    "answerTranslation": "趋势；潮流"
+  },
+  {
+    "id": "vocabulary_unit_6_human_robot_relations_q9",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 6 Human-Robot Relations",
+    "questionNo": 9,
+    "stem": "Change in ecosystem structure may _________ reduction of sea ice and related temperature changes.",
+    "answer": "result from",
+    "status": "verified",
+    "stemTranslation": "生态系统结构的变化可能源于海冰减少及相关的温度变化。",
+    "answerTranslation": "由……引起；源于"
+  },
+  {
+    "id": "vocabulary_unit_6_human_robot_relations_q10",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 6 Human-Robot Relations",
+    "questionNo": 10,
+    "stem": "When my condition improved after taking the herbal medicine, the doctor said it was purely _________ .",
+    "answer": "accidental",
+    "status": "verified",
+    "stemTranslation": "我服用草药后病情好转，医生说这纯属偶然。",
+    "answerTranslation": "偶然的；意外的"
+  },
+  {
+    "id": "vocabulary_unit_6_human_robot_relations_q11",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 6 Human-Robot Relations",
+    "questionNo": 11,
+    "stem": "We follow very strict _________ on the use and storage of personal details on computers.",
+    "answer": "guidelines",
+    "status": "verified",
+    "stemTranslation": "我们对计算机上个人信息的使用和存储遵循非常严格的指导原则。",
+    "answerTranslation": "指导原则；准则"
+  },
+  {
+    "id": "vocabulary_unit_6_human_robot_relations_q12",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 6 Human-Robot Relations",
+    "questionNo": 12,
+    "stem": "I know my daughter goes out a lot at night, but I _________ the fact that she’s always with friends.",
+    "answer": "take comfort from",
+    "status": "verified",
+    "stemTranslation": "我知道女儿晚上经常外出，但她总是和朋友在一起，这一点让我感到安慰。",
+    "answerTranslation": "从……中得到安慰"
+  },
+  {
+    "id": "vocabulary_unit_6_human_robot_relations_q13",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 6 Human-Robot Relations",
+    "questionNo": 13,
+    "stem": "Firefighters pointed to three _________ causes of the fire last night.",
+    "answer": "potential",
+    "status": "verified",
+    "stemTranslation": "消防员指出了昨晚火灾的三个潜在原因。",
+    "answerTranslation": "潜在的"
+  },
+  {
+    "id": "vocabulary_unit_6_human_robot_relations_q14",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 6 Human-Robot Relations",
+    "questionNo": 14,
+    "stem": "Aside from the threat of physical _________ , the mass deployment of AI robots would have huge socio-economic impacts.",
+    "answer": "violence",
+    "status": "verified",
+    "stemTranslation": "除了身体暴力的威胁之外，人工智能机器人的大规模部署还会产生巨大的社会经济影响。",
+    "answerTranslation": "暴力"
+  },
+  {
+    "id": "vocabulary_unit_6_human_robot_relations_q15",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇1.docx",
+    "section": "Unit 6 Human-Robot Relations",
+    "questionNo": 15,
+    "stem": "While no one could reasonably suggest that AI is a threat to human _________ currently, it is the technology’s unknown future that is causing concerns.",
+    "answer": "existence",
+    "status": "verified",
+    "stemTranslation": "虽然目前没有人能合理地认为人工智能威胁人类存在，但这项技术未知的未来正在引发担忧。",
+    "answerTranslation": "存在；生存"
+  },
+  {
+    "id": "vocabulary_i_replace_the_underlined_part_q1",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "I. Replace the underlined part",
+    "questionNo": 1,
+    "stem": "It is _________ for us to change our way of thinking or we will be out of step with our times.",
+    "answer": "imperative",
+    "status": "verified",
+    "stemTranslation": "我们改变思维方式是极其重要的，否则就会跟不上时代。",
+    "answerTranslation": "极其重要的；必要的"
+  },
+  {
+    "id": "vocabulary_i_replace_the_underlined_part_q2",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "I. Replace the underlined part",
+    "questionNo": 2,
+    "stem": "Our project is nearing _________, but we still need some help from you.",
+    "answer": "completion",
+    "status": "verified",
+    "stemTranslation": "我们的项目即将完成，但仍然需要你的一些帮助。",
+    "answerTranslation": "完成；结束"
+  },
+  {
+    "id": "vocabulary_i_replace_the_underlined_part_q3",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "I. Replace the underlined part",
+    "questionNo": 3,
+    "stem": "Most of us _________ public speaking, but if you think of it as a simple communication process, you won’t be nervous.",
+    "answer": "dread",
+    "status": "verified",
+    "stemTranslation": "我们大多数人害怕公开演讲，但如果你把它看成一个简单的交流过程，就不会紧张。",
+    "answerTranslation": "惧怕；畏惧"
+  },
+  {
+    "id": "vocabulary_i_replace_the_underlined_part_q4",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "I. Replace the underlined part",
+    "questionNo": 4,
+    "stem": "The teacher was deeply impressed by the students’ diligence and their _________ to learn.",
+    "answer": "eagerness",
+    "status": "verified",
+    "stemTranslation": "老师对学生的勤奋和学习热情印象深刻。",
+    "answerTranslation": "热切；渴望"
+  },
+  {
+    "id": "vocabulary_i_replace_the_underlined_part_q5",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "I. Replace the underlined part",
+    "questionNo": 5,
+    "stem": "The staff were asked to work together to _________ the proposal before submitting it again.",
+    "answer": "revise",
+    "status": "verified",
+    "stemTranslation": "工作人员被要求一起修改提案，然后再提交。",
+    "answerTranslation": "修改；修订"
+  },
+  {
+    "id": "vocabulary_ii_complete_the_sentences_q1",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "II. Complete the sentences",
+    "questionNo": 1,
+    "stem": "The new law’s _________ police practice is hard to evaluate right now.",
+    "answer": "impact on",
+    "status": "verified",
+    "stemTranslation": "目前很难评估这项新法律对警务实践的影响。",
+    "answerTranslation": "对……的影响"
+  },
+  {
+    "id": "vocabulary_ii_complete_the_sentences_q2",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "II. Complete the sentences",
+    "questionNo": 2,
+    "stem": "The ceasefire will only provide a _________ solution to the crisis.",
+    "answer": "temporary",
+    "status": "verified",
+    "stemTranslation": "停火只会为这场危机提供一个临时解决方案。",
+    "answerTranslation": "临时的；暂时的"
+  },
+  {
+    "id": "vocabulary_ii_complete_the_sentences_q3",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "II. Complete the sentences",
+    "questionNo": 3,
+    "stem": "To my grandmother it seems that _________ standards in today’s society are in decline.",
+    "answer": "moral",
+    "status": "verified",
+    "stemTranslation": "在我祖母看来，当今社会的道德标准正在下降。",
+    "answerTranslation": "道德的"
+  },
+  {
+    "id": "vocabulary_ii_complete_the_sentences_q4",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "II. Complete the sentences",
+    "questionNo": 4,
+    "stem": "The government has adopted extensive policies to encourage steady and _________ economic growth.",
+    "answer": "consistent",
+    "status": "verified",
+    "stemTranslation": "政府采取了广泛政策，以鼓励稳定且持续的经济增长。",
+    "answerTranslation": "一致的；持续的"
+  },
+  {
+    "id": "vocabulary_ii_complete_the_sentences_q5",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "II. Complete the sentences",
+    "questionNo": 5,
+    "stem": "That is an interesting job offer — I’d give it serious _________ if I were you.",
+    "answer": "consideration",
+    "status": "verified",
+    "stemTranslation": "那是一份很有意思的工作邀请。如果我是你，我会认真考虑。",
+    "answerTranslation": "考虑；体谅"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q1",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 1,
+    "stem": "Improving people's livelihood is a top _________ for all governments.",
+    "answer": "priority",
+    "status": "verified",
+    "stemTranslation": "改善民生是所有政府的首要任务。",
+    "answerTranslation": "优先事项；重点"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q2",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 2,
+    "stem": "Normal forgetting may even be a safety _________ to ensure our brain doesn't become too full.",
+    "answer": "mechanism",
+    "status": "verified",
+    "stemTranslation": "正常遗忘甚至可能是一种安全机制，以确保我们的大脑不会变得过于满载。",
+    "answerTranslation": "机制"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q3",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 3,
+    "stem": "If you want to obtain an ideal job, you need to continuously _________ your comprehensive competence.",
+    "answer": "improve",
+    "status": "verified",
+    "stemTranslation": "如果你想获得理想的工作，就需要不断提高自己的综合能力。",
+    "answerTranslation": "提高；改善"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q4",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 4,
+    "stem": "The _________ is completed by payment of the fee.",
+    "answer": "transaction",
+    "status": "verified",
+    "stemTranslation": "交易通过支付费用而完成。",
+    "answerTranslation": "交易"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q5",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 5,
+    "stem": "The _________ in my case is the poor performance of my public speech.",
+    "answer": "weakness",
+    "status": "verified",
+    "stemTranslation": "我这个案例中的弱点是公开演讲表现不佳。",
+    "answerTranslation": "弱点"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q6",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 6,
+    "stem": "The term \"cosplay\" is derived from Japan and is a _________ word of \"costume\" and \"play\".",
+    "answer": "blend",
+    "status": "verified",
+    "stemTranslation": "“cosplay”一词源自日本，是“costume”和“play”的混成词。",
+    "answerTranslation": "混合；混成词"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q7",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 7,
+    "stem": "They have begun marshalling forces to send _________ to the hurricane victims.",
+    "answer": "relief",
+    "status": "verified",
+    "stemTranslation": "他们已经开始调集力量，向飓风受害者送去救援。",
+    "answerTranslation": "救援；宽慰"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q8",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 8,
+    "stem": "Some people experience shyness as a _________ to communication, but this can be broken down gradually.",
+    "answer": "barrier",
+    "status": "verified",
+    "stemTranslation": "有些人把害羞视为交流障碍，但这种障碍可以逐渐被打破。",
+    "answerTranslation": "障碍"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q9",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 9,
+    "stem": "Positive emotions _________ the creative aspects of learning and negative emotions inhibit it.",
+    "answer": "facilitate",
+    "status": "verified",
+    "stemTranslation": "积极情绪促进学习中的创造性方面，而消极情绪会抑制它。",
+    "answerTranslation": "促进；使便利"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q10",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 10,
+    "stem": "There has been a shift of emphasis from _________ to service industries.",
+    "answer": "manufacturing",
+    "status": "verified",
+    "stemTranslation": "重点已经从制造业转向服务业。",
+    "answerTranslation": "制造业"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q11",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 11,
+    "stem": "We are confident that our country will be more powerful and _________ in the process of relieving poverty.",
+    "answer": "prosperous",
+    "status": "verified",
+    "stemTranslation": "我们相信，在脱贫过程中，我们的国家会更加强大和繁荣。",
+    "answerTranslation": "繁荣的"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q12",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 12,
+    "stem": "This year, China-ASEAN relations continue to _________ ahead.",
+    "answer": "forge",
+    "status": "verified",
+    "stemTranslation": "今年，中国与东盟关系继续向前推进。",
+    "answerTranslation": "稳步前进；打造"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q13",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 13,
+    "stem": "The government performed competently in the face of _________ challenges.",
+    "answer": "multiple",
+    "status": "verified",
+    "stemTranslation": "政府在面对多重挑战时表现得很称职。",
+    "answerTranslation": "多个的；多重的"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q14",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 14,
+    "stem": "Residents on the island depended on fishing and farming for their _________..",
+    "answer": "livelihood",
+    "status": "verified",
+    "stemTranslation": "岛上居民依靠捕鱼和农业维持生计。",
+    "answerTranslation": "生计；生活资料"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q15",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 15,
+    "stem": "Honda added a _________ production line this year in Chengdu, hoping to boost sales.",
+    "answer": "domestic",
+    "status": "verified",
+    "stemTranslation": "本田今年在成都新增了一条国内生产线，希望提升销量。",
+    "answerTranslation": "国内的；家庭的"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q16",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 16,
+    "stem": "The _________ trade for porcelain not only promoted economic contact but also opened a window for the Western world to know more about China.",
+    "answer": "bilateral",
+    "status": "verified",
+    "stemTranslation": "瓷器双边贸易不仅促进了经济联系，也为西方世界更多了解中国打开了一扇窗。",
+    "answerTranslation": "双边的"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q17",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 17,
+    "stem": "Only an effective _________ between filmmakers and artists can create films that will enhance viewers' pleasures from beauty.",
+    "answer": "collaboration",
+    "status": "verified",
+    "stemTranslation": "只有电影制作人与艺术家之间有效合作，才能创作出提升观众审美愉悦的电影。",
+    "answerTranslation": "合作；协作"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q18",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 18,
+    "stem": "We can _________ the treatment to the patient's needs.",
+    "answer": "tailor",
+    "status": "verified",
+    "stemTranslation": "我们可以根据患者的需要定制治疗方案。",
+    "answerTranslation": "定制；使适合"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q19",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 19,
+    "stem": "Some projects under international cooperation are helpful for poverty _________ in developing countries.",
+    "answer": "alleviation",
+    "status": "verified",
+    "stemTranslation": "一些国际合作项目有助于发展中国家的扶贫。",
+    "answerTranslation": "减轻；缓解"
+  },
+  {
+    "id": "vocabulary_iii_words_in_use_q20",
+    "type": "vocabulary",
+    "sourceFile": "词汇练习/词汇2.docx",
+    "section": "III. Words in use",
+    "questionNo": 20,
+    "stem": "California is one of the richest and most _________ parts of the world.",
+    "answer": "diverse",
+    "status": "verified",
+    "stemTranslation": "加利福尼亚是世界上最富有且最多元化的地区之一。",
+    "answerTranslation": "多样的；不同的"
+  },
+  {
+    "id": "listening_unit4_q8",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 8,
+    "stem": "Unit 4 Question 8",
+    "options": [
+      "A) She has been ill for a long time.",
+      "B) She does exercises regularly.",
+      "C) She gives up eating her favorite food.",
+      "D) She attends a weight loss program."
+    ],
+    "answer": "D",
+    "status": "verified",
+    "answerTranslation": "她参加了一个减肥项目。"
+  },
+  {
+    "id": "listening_unit4_q9",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 9,
+    "stem": "Unit 4 Question 9",
+    "options": [
+      "A) It tells which foods are high in calories.",
+      "B) It suggests people giving up their favorite food.",
+      "C) It proves doing exercises are more important than changing diet.",
+      "D) It helps people figure out how much to eat of each kind of food."
+    ],
+    "answer": "D",
+    "status": "verified",
+    "answerTranslation": "它帮助人们弄清每种食物该吃多少。"
+  },
+  {
+    "id": "listening_unit4_q10",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 10,
+    "stem": "Unit 4 Question 10",
+    "options": [
+      "A) Jogging.",
+      "B) Running.",
+      "C) Yoga.",
+      "D) Home-Gym."
+    ],
+    "answer": "C",
+    "status": "verified",
+    "answerTranslation": "瑜伽。"
+  },
+  {
+    "id": "listening_unit4_q11",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 11,
+    "stem": "Unit 4 Question 11",
+    "options": [
+      "A) It is better than jogging.",
+      "B) It isn’t the best way of losing weight.",
+      "C) It can calm people down.",
+      "D) Movie stars prefer jogging to yoga."
+    ],
+    "answer": "C",
+    "status": "verified",
+    "answerTranslation": "它能让人平静下来。"
+  },
+  {
+    "id": "listening_unit4_q12",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 12,
+    "stem": "Unit 4 Question 12",
+    "options": [
+      "A) It has been there for ten or twenty years.",
+      "B) She knows why it has appeared in the UK.",
+      "C) It is a new thing for people in the UK.",
+      "D) People like buying TVs in Black Friday."
+    ],
+    "answer": "C",
+    "status": "verified",
+    "answerTranslation": "它对英国人来说是个新事物。"
+  },
+  {
+    "id": "listening_unit4_q13",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 13,
+    "stem": "Unit 4 Question 13",
+    "options": [
+      "A) The worst exports.",
+      "B) The worst imports.",
+      "C) The best exports.",
+      "D) The best imports."
+    ],
+    "answer": "A",
+    "status": "verified",
+    "answerTranslation": "最糟糕的出口品。"
+  },
+  {
+    "id": "listening_unit4_q14",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 14,
+    "stem": "Unit 4 Question 14",
+    "options": [
+      "A) It has been there for more than thirty years.",
+      "B) It is before Thanksgiving.",
+      "C) It is always on a Thursday in December.",
+      "D) Department stores have massive sales."
+    ],
+    "answer": "D",
+    "status": "verified",
+    "answerTranslation": "百货商店会进行大规模促销。"
+  },
+  {
+    "id": "listening_unit4_q15",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 15,
+    "stem": "Unit 4 Question 15",
+    "options": [
+      "A) In shopping malls.",
+      "B) In department stores.",
+      "C) In online shops.",
+      "D) In a supermarket."
+    ],
+    "answer": "D",
+    "status": "verified",
+    "answerTranslation": "在超市里。"
+  },
+  {
+    "id": "listening_unit4_q16",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 16,
+    "stem": "Unit 4 Question 16",
+    "options": [
+      "A) Hippies. （嬉皮士）",
+      "B) Yuppies. （雅皮士）",
+      "C) Veteran soldiers.",
+      "D) Migrant workers."
+    ],
+    "answer": "D",
+    "status": "verified",
+    "answerTranslation": "外来务工人员。"
+  },
+  {
+    "id": "listening_unit4_q17",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 17,
+    "stem": "Unit 4 Question 17",
+    "options": [
+      "A) In the 1960s.",
+      "B) In the 1950s.",
+      "C) In the 1940s.",
+      "D) In the 1940s."
+    ],
+    "answer": "A",
+    "status": "verified",
+    "answerTranslation": "在20世纪60年代。"
+  },
+  {
+    "id": "listening_unit4_q18",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 18,
+    "stem": "Unit 4 Question 18",
+    "options": [
+      "A) American hitchers raise left arm.",
+      "B) American hitchers face the oncoming traffic.",
+      "C) American hitchers straighten their elbow.",
+      "D) American hitchers stand in the same direction as the traffic."
+    ],
+    "answer": "B",
+    "status": "verified",
+    "answerTranslation": "美国搭便车者面对迎面驶来的车辆。"
+  },
+  {
+    "id": "listening_unit4_q19",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 19,
+    "stem": "Unit 4 Question 19",
+    "options": [
+      "A) Science fiction.",
+      "B) TikTok.",
+      "C) Wu xia.",
+      "D) Shopping on Taobao."
+    ],
+    "answer": "B",
+    "status": "verified",
+    "answerTranslation": "TikTok。"
+  },
+  {
+    "id": "listening_unit4_q20",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 20,
+    "stem": "Unit 4 Question 20",
+    "options": [
+      "A) Building social following.",
+      "B) Starting an occupation.",
+      "C) Having fun.",
+      "D) Earning money."
+    ],
+    "answer": "C",
+    "status": "verified",
+    "answerTranslation": "为了娱乐。"
+  },
+  {
+    "id": "listening_unit4_q21",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 21,
+    "stem": "Unit 4 Question 21",
+    "options": [
+      "A) She currently posts more than one video every day.",
+      "B) She makes money by advertising for brands on TikTok.",
+      "C) Her short videos only involve dancing.",
+      "D) She doesn’t think TikTok can give people a sense of identity."
+    ],
+    "answer": "B",
+    "status": "verified",
+    "answerTranslation": "她通过在 TikTok 上为品牌做广告赚钱。"
+  },
+  {
+    "id": "listening_unit4_q22",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 22,
+    "stem": "Unit 4 Question 22",
+    "options": [
+      "A) More than 3 million.",
+      "B) More than 4 million.",
+      "C) More than 5 million.",
+      "D) More than 6 million."
+    ],
+    "answer": "B",
+    "status": "verified",
+    "answerTranslation": "超过400万。"
+  },
+  {
+    "id": "listening_unit4_q23",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 23,
+    "stem": "Unit 4 Question 23",
+    "options": [
+      "A) Because the weather is mild.",
+      "B) Because there are fewer crowds.",
+      "C) Because it is warm enough to sleep outside.",
+      "D) Because there are dramatic peaks and lakes."
+    ],
+    "answer": "C",
+    "status": "verified",
+    "answerTranslation": "因为天气暖和到可以在户外睡觉。"
+  },
+  {
+    "id": "listening_unit4_q24",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 24,
+    "stem": "Unit 4 Question 24",
+    "options": [
+      "A) It is extremely hot in summer.",
+      "B) It is cold even in April and May.",
+      "C) It has a wide range of temperature in winter.",
+      "D) It has mild weather all the year around."
+    ],
+    "answer": "C",
+    "status": "verified",
+    "answerTranslation": "它冬季温差很大。"
+  },
+  {
+    "id": "listening_unit4_q25",
+    "type": "listening",
+    "sourceFile": "听力练习/Unit 4.docx",
+    "section": "Unit 4",
+    "questionNo": 25,
+    "stem": "Unit 4 Question 25",
+    "options": [
+      "A) By bike.",
+      "B) On foot.",
+      "C) By car.",
+      "D) By bus."
+    ],
+    "answer": "C",
+    "status": "verified",
+    "answerTranslation": "开车。"
+  },
+  {
+    "id": "listening_unit5_q8",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 8,
+    "stem": "Unit 5 Question 8",
+    "options": [
+      "A) 30%.",
+      "B) 40%.",
+      "C) 60%.",
+      "D) 70%."
+    ],
+    "answer": "C",
+    "status": "verified",
+    "answerTranslation": "60%。"
+  },
+  {
+    "id": "listening_unit5_q9",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 9,
+    "stem": "Unit 5 Question 9",
+    "options": [
+      "A) 30%.",
+      "B) 40%.",
+      "C) 60%.",
+      "D) 70%."
+    ],
+    "answer": "A",
+    "status": "verified",
+    "answerTranslation": "30%。"
+  },
+  {
+    "id": "listening_unit5_q10",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 10,
+    "stem": "Unit 5 Question 10",
+    "options": [
+      "A) Foreigners in Japan.",
+      "B) Japanese in America.",
+      "C) Local people in Japan.",
+      "D) Local tourists in Japan."
+    ],
+    "answer": "A",
+    "status": "verified",
+    "answerTranslation": "在日本的外国人。"
+  },
+  {
+    "id": "listening_unit5_q11",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 11,
+    "stem": "Unit 5 Question 11",
+    "options": [
+      "A) Only the woman wants to practice her Japanese.",
+      "B) The man has so many Japanese friends to socialize.",
+      "C) When to speak in English or Japanese depends only on the topic.",
+      "D) They will possibly speak in Japanese if the topic is difficult."
+    ],
+    "answer": "C",
+    "status": "verified",
+    "answerTranslation": "什么时候说英语或日语只取决于话题。"
+  },
+  {
+    "id": "listening_unit5_q12",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 12,
+    "stem": "Unit 5 Question 12",
+    "options": [
+      "A) Hard work.",
+      "B) Talent.",
+      "C) Both.",
+      "D) It depends."
+    ],
+    "answer": "A",
+    "status": "verified",
+    "answerTranslation": "努力工作。"
+  },
+  {
+    "id": "listening_unit5_q13",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 13,
+    "stem": "Unit 5 Question 13",
+    "options": [
+      "A) To be patient.",
+      "B) To become efficient.",
+      "C) To be ambitious.",
+      "D) To be focused."
+    ],
+    "answer": "B",
+    "status": "verified",
+    "answerTranslation": "变得高效。"
+  },
+  {
+    "id": "listening_unit5_q14",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 14,
+    "stem": "Unit 5 Question 14",
+    "options": [
+      "A) Talent outweighs hard work.",
+      "B) Hard work outweighs talent.",
+      "C) Both are important.",
+      "D) None are important."
+    ],
+    "answer": "A",
+    "status": "verified",
+    "answerTranslation": "天赋比努力更重要。"
+  },
+  {
+    "id": "listening_unit5_q15",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 15,
+    "stem": "Unit 5 Question 15",
+    "options": [
+      "A) Singing.",
+      "B) Dancing.",
+      "C) Playing basketball.",
+      "D) Acting."
+    ],
+    "answer": "C",
+    "status": "verified",
+    "answerTranslation": "打篮球。"
+  },
+  {
+    "id": "listening_unit5_q16",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 16,
+    "stem": "Unit 5 Question 16",
+    "options": [
+      "A) Who we are.",
+      "B) Where we are.",
+      "C) What we do.",
+      "D) How we think."
+    ],
+    "answer": "D",
+    "status": "verified",
+    "answerTranslation": "我们如何思考。"
+  },
+  {
+    "id": "listening_unit5_q17",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 17,
+    "stem": "Unit 5 Question 17",
+    "options": [
+      "A) Food, shelter, and clothing.",
+      "B) Optimism, options and compassion.",
+      "C) Your habits, personality, and voice.",
+      "D) Exercise, healthy diets, and regular sleep."
+    ],
+    "answer": "D",
+    "status": "verified",
+    "answerTranslation": "运动、健康饮食和规律睡眠。"
+  },
+  {
+    "id": "listening_unit5_q18",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 18,
+    "stem": "Unit 5 Question 18",
+    "options": [
+      "A) The effect of what happens on our happiness is permanent.",
+      "B) While making a decision, just pick the option that others feel right.",
+      "C) By pursuing happiness, we can impede (阻止) negative emotions and foster positive ones.",
+      "D) People gain more happiness from watching others give to charity than receiving money themselves."
+    ],
+    "answer": "C",
+    "status": "verified",
+    "answerTranslation": "通过追求幸福，我们可以阻止负面情绪并培养积极情绪。"
+  },
+  {
+    "id": "listening_unit5_q19",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 19,
+    "stem": "Unit 5 Question 19",
+    "options": [
+      "A) E-Sports scholarships.",
+      "B) The rise of e-Sports.",
+      "C) The growing audience of e-Sports.",
+      "D) Advertisements and sponsorships of e-Sports."
+    ],
+    "answer": "B",
+    "status": "verified",
+    "answerTranslation": "电子竞技的兴起。"
+  },
+  {
+    "id": "listening_unit5_q20",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 20,
+    "stem": "Unit 5 Question 20",
+    "options": [
+      "A) E-sports players do not need a long-term training.",
+      "B) E-sports has teams, leagues, and star players.",
+      "C) E-sports is totally different from other sports.",
+      "D) There are not any advertisements in e-Sports."
+    ],
+    "answer": "B",
+    "status": "verified",
+    "answerTranslation": "电子竞技有团队、联赛和明星选手。"
+  },
+  {
+    "id": "listening_unit5_q21",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 21,
+    "stem": "Unit 5 Question 21",
+    "options": [
+      "A) Through digital television.",
+      "B) Through pay television.",
+      "C) Through live streaming.",
+      "D) Through recorded program."
+    ],
+    "answer": "C",
+    "status": "verified",
+    "answerTranslation": "通过直播。"
+  },
+  {
+    "id": "listening_unit5_q22",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 22,
+    "stem": "Unit 5 Question 22",
+    "options": [
+      "A) The Carnivals Venice.",
+      "B) La Tomatina.",
+      "C) Munich’s Oktoberfest.",
+      "D) London’s Notting Hill Carnival."
+    ],
+    "answer": "B",
+    "status": "verified",
+    "answerTranslation": "番茄大战节。"
+  },
+  {
+    "id": "listening_unit5_q23",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 23,
+    "stem": "Unit 5 Question 23",
+    "options": [
+      "A) Firing of the cannon.",
+      "B) Beginning of the chaos.",
+      "C) Wearing protective safety glasses.",
+      "D) Squeezing the first tomato."
+    ],
+    "answer": "A",
+    "status": "verified",
+    "answerTranslation": "鸣炮。"
+  },
+  {
+    "id": "listening_unit5_q24",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 24,
+    "stem": "Unit 5 Question 24",
+    "options": [
+      "A) People must wear safety glasses and gloves.",
+      "B) People can tear others’ clothing.",
+      "C) Glass bottles are allowed to carry.",
+      "D) People must squeeze the tomatoes before throwing."
+    ],
+    "answer": "D",
+    "status": "verified",
+    "answerTranslation": "人们必须先把番茄捏软再扔。"
+  },
+  {
+    "id": "listening_unit5_q25",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 5.docx",
+    "section": "Unit 5",
+    "questionNo": 25,
+    "stem": "Unit 5 Question 25",
+    "options": [
+      "A) By street-cleaning vehicles.",
+      "B) By city cleaners.",
+      "C) By fire trucks.",
+      "D) By street sprinklers."
+    ],
+    "answer": "C",
+    "status": "verified",
+    "answerTranslation": "用消防车。"
+  },
+  {
+    "id": "listening_unit6_q8",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 8,
+    "stem": "Unit 6 Question 8",
+    "options": [
+      "A) Two.",
+      "B) Three.",
+      "C) Four.",
+      "D) Five."
+    ],
+    "answer": "C",
+    "status": "verified",
+    "answerTranslation": "四个。"
+  },
+  {
+    "id": "listening_unit6_q9",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 9,
+    "stem": "Unit 6 Question 9",
+    "options": [
+      "A) In the street around 9:13 p.m.",
+      "B) In the street around 9:13 a.m.",
+      "C) In an office complex around 9:30 p.m.",
+      "D) In an office complex around 9:30 a.m."
+    ],
+    "answer": "D",
+    "status": "verified",
+    "answerTranslation": "上午9点30分左右，在一栋办公楼综合体内。"
+  },
+  {
+    "id": "listening_unit6_q10",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 10,
+    "stem": "Unit 6 Question 10",
+    "options": [
+      "A) The employees eventually controlled the suspect.",
+      "B) The police eventually controlled the suspect.",
+      "C) All the victims are in their 40s and 50s.",
+      "D) All the victims are with life-threatening injuries."
+    ],
+    "answer": "A",
+    "status": "verified",
+    "answerTranslation": "员工最终控制住了嫌疑人。"
+  },
+  {
+    "id": "listening_unit6_q11",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 11,
+    "stem": "Unit 6 Question 11",
+    "options": [
+      "A) The former co-workers.",
+      "B) Alan Smith.",
+      "C) A man and a woman.",
+      "D) Two male victims."
+    ],
+    "answer": "C",
+    "status": "verified",
+    "answerTranslation": "一男一女。"
+  },
+  {
+    "id": "listening_unit6_q12",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 12,
+    "stem": "Unit 6 Question 12",
+    "options": [
+      "A) Two.",
+      "B) Three.",
+      "C) Four.",
+      "D) None."
+    ],
+    "answer": "A",
+    "status": "verified",
+    "answerTranslation": "两个。"
+  },
+  {
+    "id": "listening_unit6_q13",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 13,
+    "stem": "Unit 6 Question 13",
+    "options": [
+      "A) After he finished high school.",
+      "B) When he was in high school.",
+      "C) Before he learned to play the trumpet.",
+      "D) After he finished college."
+    ],
+    "answer": "A",
+    "status": "verified",
+    "answerTranslation": "高中毕业后。"
+  },
+  {
+    "id": "listening_unit6_q14",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 14,
+    "stem": "Unit 6 Question 14",
+    "options": [
+      "A) You will not enjoy it.",
+      "B) You will enjoy it more.",
+      "C) You will learn much more.",
+      "D) You will not learn much."
+    ],
+    "answer": "B",
+    "status": "verified",
+    "answerTranslation": "你会更享受它。"
+  },
+  {
+    "id": "listening_unit6_q15",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 15,
+    "stem": "Unit 6 Question 15",
+    "options": [
+      "A) She was in a marching band when she was a child.",
+      "B) She was in an orchestra when she was a child.",
+      "C) She was in a rock band when she was a child.",
+      "D) She didn’t join any musical groups when she was a child."
+    ],
+    "answer": "B",
+    "status": "verified",
+    "answerTranslation": "她小时候参加过管弦乐队。"
+  },
+  {
+    "id": "listening_unit6_q16",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 16,
+    "stem": "Unit 6 Question 16",
+    "options": [
+      "A) To children aged 2 to 5.",
+      "B) To some high school students.",
+      "C) To the six children registered.",
+      "D) To children and their families."
+    ],
+    "answer": "A",
+    "status": "verified",
+    "answerTranslation": "面向2至5岁的儿童。"
+  },
+  {
+    "id": "listening_unit6_q17",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 17,
+    "stem": "Unit 6 Question 17",
+    "options": [
+      "A) 6.",
+      "B) 19.",
+      "C) 25.",
+      "D) 31."
+    ],
+    "answer": "C",
+    "status": "verified",
+    "answerTranslation": "25。"
+  },
+  {
+    "id": "listening_unit6_q18",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 18,
+    "stem": "Unit 6 Question 18",
+    "options": [
+      "A) Language learning perspective.",
+      "B) Cognitive development.",
+      "C) Intellectual development.",
+      "D) Psychological development."
+    ],
+    "answer": "D",
+    "status": "verified",
+    "answerTranslation": "心理发展。"
+  },
+  {
+    "id": "listening_unit6_q19",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 19,
+    "stem": "Unit 6 Question 19",
+    "options": [
+      "A) International students majoring in STEM subjects have been increasing in recent years.",
+      "B) STEM subjects are no longer popular for international students now.",
+      "C) International students contribute a huge amount of money to the U.S. economy.",
+      "D) International students in the U.S. has witnessed a declining trend."
+    ],
+    "answer": "D",
+    "status": "verified",
+    "answerTranslation": "在美国的国际学生人数呈下降趋势。"
+  },
+  {
+    "id": "listening_unit6_q20",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 20,
+    "stem": "Unit 6 Question 20",
+    "options": [
+      "A) 5.5%.",
+      "B) 7.1%.",
+      "C) 10.3%.",
+      "D) 14.8%."
+    ],
+    "answer": "A",
+    "status": "verified",
+    "answerTranslation": "5.5%。"
+  },
+  {
+    "id": "listening_unit6_q21",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 21,
+    "stem": "Unit 6 Question 21",
+    "options": [
+      "A) Engineering majors.",
+      "B) Agriculture majors.",
+      "C) Business majors.",
+      "D) Education majors."
+    ],
+    "answer": "B",
+    "status": "verified",
+    "answerTranslation": "农业专业。"
+  },
+  {
+    "id": "listening_unit6_q22",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 22,
+    "stem": "Unit 6 Question 22",
+    "options": [
+      "A) He is a 9-year-old university student.",
+      "B) He is a 10-year-old university student.",
+      "C) He became the world’s youngest college graduate.",
+      "D) He will enroll in a doctoral program in a U.S. university when he is only 9."
+    ],
+    "answer": "D",
+    "status": "verified",
+    "answerTranslation": "他将在年仅9岁时进入美国一所大学攻读博士项目。"
+  },
+  {
+    "id": "listening_unit6_q23",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 23,
+    "stem": "Unit 6 Question 23",
+    "options": [
+      "A) It encouraged him to graduate before 10 years old.",
+      "B) It gave him excessive pressure to graduate before 10 years old.",
+      "C) It forced him to complete the course before turning 10 years old.",
+      "D) It would not allow him to complete the course before turning 10 years old."
+    ],
+    "answer": "D",
+    "status": "verified",
+    "answerTranslation": "它不允许他在10岁前完成课程。"
+  },
+  {
+    "id": "listening_unit6_q24",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 24,
+    "stem": "Unit 6 Question 24",
+    "options": [
+      "A) They withdrew their son from TUE.",
+      "B) They split their son’s time between the two universities.",
+      "C) They applied for an Australian university for their son.",
+      "D) They decided to let go of the opportunities."
+    ],
+    "answer": "A",
+    "status": "verified",
+    "answerTranslation": "他们让儿子从埃因霍温理工大学退学。"
+  },
+  {
+    "id": "listening_unit6_q25",
+    "type": "listening",
+    "sourceFile": "听力练习/uint 6.docx",
+    "section": "Unit 6",
+    "questionNo": 25,
+    "stem": "Unit 6 Question 25",
+    "options": [
+      "A) Laurent Simons.",
+      "B) Alexander Simons.",
+      "C) Michael Kearney.",
+      "D) Alabama."
+    ],
+    "answer": "C",
+    "status": "verified",
+    "answerTranslation": "迈克尔·卡尼。"
+  },
+  {
+    "id": "reading_2025_12_1_passage_one_q46",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第1套 Passage One",
+    "questionNo": 46,
+    "stem": "What do we learn from the passage about the timing of our behaviors?",
+    "stemTranslation": "关于我们行为的时间安排，文章说明了什么？",
+    "options": [
+      "A) It has a considerable impact on our health.",
+      "B) It confines us to a 24-hour day-night cycle.",
+      "C) It requires us to follow a particular rhythm.",
+      "D) It holds the key to all human body functions."
+    ],
+    "answer": "A",
+    "answerTranslation": "它对我们的健康有相当大的影响。",
+    "contextRaw": "All living organisms on Earth are exposed to a 24-hour day-night cycle. This cycle is the reason why people rest at night and are active during the day. Consequently, all human body functions also follow this daily rhythm, and the timing of behaviors like exercise or food intake can significantly influence your health. For example, eating at night can lead to weight gain over time because food intake at night leads to increased fat storage.\n\nMany drug targets in the body follow a 24-hour cycle, too. This means that the specific proteins a drug is designed to modify can react differently to the medicine over the course of a 24-hour time period. Because how the body responds to a drug can differ depending on the time it is taken, it logically follows that taking medicines at specific times could help increase their effectiveness and reduce unwanted side effects.\n\nWhen doctors prescribe medicine for people, they rarely consider the best time to take it. There are two main reasons for that oversight. First, many physicians are not aware that some drugs work better during a specific time of the day. And second, most drugs have not been studied for possible different effects during a 24-hour cycle. Therefore, patients are directed to take most drugs during the morning or evening primarily to ensure compliance.\n\nOver 50 years ago, researchers found that the cholesterol drug simvastatin is more effective at lowering cholesterol levels when taken at night rather than during the day. This is because the liver enzyme these drugs target is more active at night.\n\nTaking medicine at the wrong time can even cause harm. My colleagues and I wondered whether midazolam, the most common sedative used in surgical procedures worldwide, might interfere with the internal clock that protects the heart at night. Currently, there are no guidelines regarding when midazolam should be administered.\n\nMore research is needed to determine the best times to administer treatments for different diseases. I believe taking drug timing into account could help make treatments more effective and help more people worldwide.",
+    "contextTranslation": "地球上所有生物都处在24小时昼夜交替的周期中。正是这一周期决定了人们夜间休息、白天活动的规律。因此，人体各项功能也遵循这种日常节律，运动、进食等行为发生的时间会明显影响健康。例如，夜间进食可能随着时间推移导致体重增加，因为夜间进食更容易使脂肪储存增加。\n\n人体内许多药物靶点也遵循24小时周期。这意味着药物要调节的特定蛋白质，在一天中的不同时间可能会对药物产生不同反应。既然身体对药物的反应会因服药时间不同而变化，那么在特定时间服药就可能提高药效并减少不良副作用。\n\n医生给病人开药时，很少考虑最佳服药时间。造成这种忽视主要有两个原因：第一，许多医生并不知道某些药物在一天中的特定时间效果更好；第二，大多数药物还没有被研究过在24小时周期内是否会产生不同效果。因此，医生通常让患者早晨或晚上服用大多数药物，主要是为了确保患者能遵医嘱服药。\n\n50多年前，研究人员发现降胆固醇药辛伐他汀在夜间服用比白天服用更能有效降低胆固醇水平。这是因为该药物所作用的肝脏酶在夜间更活跃。\n\n在错误时间服药甚至可能造成伤害。我和同事曾想知道，全球外科手术中最常用的镇静剂咪达唑仑，是否会干扰夜间保护心脏的生物钟。目前，关于咪达唑仑应在何时给药还没有相关指南。\n\n我们还需要开展更多研究，以确定不同疾病治疗的最佳给药时间。我认为，把服药时间纳入考虑可以提高治疗效果，并帮助世界上更多患者受益。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_1_passage_one_q47",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第1套 Passage One",
+    "questionNo": 47,
+    "stem": "What does the author say about the proteins in our body?",
+    "stemTranslation": "作者对人体内的蛋白质说了什么？",
+    "options": [
+      "A) They can modify the effects of medicines in different ways.",
+      "B) They can reduce unwanted side effects of certain medicines.",
+      "C) Their reaction to medicines changes during the day-night cycle.",
+      "D) Their design determines how differently they react to medicines."
+    ],
+    "answer": "C",
+    "answerTranslation": "它们对药物的反应会随着昼夜周期而变化。",
+    "contextRaw": "All living organisms on Earth are exposed to a 24-hour day-night cycle. This cycle is the reason why people rest at night and are active during the day. Consequently, all human body functions also follow this daily rhythm, and the timing of behaviors like exercise or food intake can significantly influence your health. For example, eating at night can lead to weight gain over time because food intake at night leads to increased fat storage.\n\nMany drug targets in the body follow a 24-hour cycle, too. This means that the specific proteins a drug is designed to modify can react differently to the medicine over the course of a 24-hour time period. Because how the body responds to a drug can differ depending on the time it is taken, it logically follows that taking medicines at specific times could help increase their effectiveness and reduce unwanted side effects.\n\nWhen doctors prescribe medicine for people, they rarely consider the best time to take it. There are two main reasons for that oversight. First, many physicians are not aware that some drugs work better during a specific time of the day. And second, most drugs have not been studied for possible different effects during a 24-hour cycle. Therefore, patients are directed to take most drugs during the morning or evening primarily to ensure compliance.\n\nOver 50 years ago, researchers found that the cholesterol drug simvastatin is more effective at lowering cholesterol levels when taken at night rather than during the day. This is because the liver enzyme these drugs target is more active at night.\n\nTaking medicine at the wrong time can even cause harm. My colleagues and I wondered whether midazolam, the most common sedative used in surgical procedures worldwide, might interfere with the internal clock that protects the heart at night. Currently, there are no guidelines regarding when midazolam should be administered.\n\nMore research is needed to determine the best times to administer treatments for different diseases. I believe taking drug timing into account could help make treatments more effective and help more people worldwide.",
+    "contextTranslation": "地球上所有生物都处在24小时昼夜交替的周期中。正是这一周期决定了人们夜间休息、白天活动的规律。因此，人体各项功能也遵循这种日常节律，运动、进食等行为发生的时间会明显影响健康。例如，夜间进食可能随着时间推移导致体重增加，因为夜间进食更容易使脂肪储存增加。\n\n人体内许多药物靶点也遵循24小时周期。这意味着药物要调节的特定蛋白质，在一天中的不同时间可能会对药物产生不同反应。既然身体对药物的反应会因服药时间不同而变化，那么在特定时间服药就可能提高药效并减少不良副作用。\n\n医生给病人开药时，很少考虑最佳服药时间。造成这种忽视主要有两个原因：第一，许多医生并不知道某些药物在一天中的特定时间效果更好；第二，大多数药物还没有被研究过在24小时周期内是否会产生不同效果。因此，医生通常让患者早晨或晚上服用大多数药物，主要是为了确保患者能遵医嘱服药。\n\n50多年前，研究人员发现降胆固醇药辛伐他汀在夜间服用比白天服用更能有效降低胆固醇水平。这是因为该药物所作用的肝脏酶在夜间更活跃。\n\n在错误时间服药甚至可能造成伤害。我和同事曾想知道，全球外科手术中最常用的镇静剂咪达唑仑，是否会干扰夜间保护心脏的生物钟。目前，关于咪达唑仑应在何时给药还没有相关指南。\n\n我们还需要开展更多研究，以确定不同疾病治疗的最佳给药时间。我认为，把服药时间纳入考虑可以提高治疗效果，并帮助世界上更多患者受益。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_1_passage_one_q48",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第1套 Passage One",
+    "questionNo": 48,
+    "stem": "What do doctors do when prescribing medicine for people?",
+    "stemTranslation": "医生给人们开药时通常会怎么做？",
+    "options": [
+      "A) They give little thought to the time of taking it for maximum effect.",
+      "B) They rarely consider which medicine works better for which patient.",
+      "C) They tell patients its possible side effects during a period of 24 hours.",
+      "D) They tell patients to comply with the directions of drug manufacturers."
+    ],
+    "answer": "A",
+    "answerTranslation": "他们很少考虑如何安排服药时间才能达到最佳效果。",
+    "contextRaw": "All living organisms on Earth are exposed to a 24-hour day-night cycle. This cycle is the reason why people rest at night and are active during the day. Consequently, all human body functions also follow this daily rhythm, and the timing of behaviors like exercise or food intake can significantly influence your health. For example, eating at night can lead to weight gain over time because food intake at night leads to increased fat storage.\n\nMany drug targets in the body follow a 24-hour cycle, too. This means that the specific proteins a drug is designed to modify can react differently to the medicine over the course of a 24-hour time period. Because how the body responds to a drug can differ depending on the time it is taken, it logically follows that taking medicines at specific times could help increase their effectiveness and reduce unwanted side effects.\n\nWhen doctors prescribe medicine for people, they rarely consider the best time to take it. There are two main reasons for that oversight. First, many physicians are not aware that some drugs work better during a specific time of the day. And second, most drugs have not been studied for possible different effects during a 24-hour cycle. Therefore, patients are directed to take most drugs during the morning or evening primarily to ensure compliance.\n\nOver 50 years ago, researchers found that the cholesterol drug simvastatin is more effective at lowering cholesterol levels when taken at night rather than during the day. This is because the liver enzyme these drugs target is more active at night.\n\nTaking medicine at the wrong time can even cause harm. My colleagues and I wondered whether midazolam, the most common sedative used in surgical procedures worldwide, might interfere with the internal clock that protects the heart at night. Currently, there are no guidelines regarding when midazolam should be administered.\n\nMore research is needed to determine the best times to administer treatments for different diseases. I believe taking drug timing into account could help make treatments more effective and help more people worldwide.",
+    "contextTranslation": "地球上所有生物都处在24小时昼夜交替的周期中。正是这一周期决定了人们夜间休息、白天活动的规律。因此，人体各项功能也遵循这种日常节律，运动、进食等行为发生的时间会明显影响健康。例如，夜间进食可能随着时间推移导致体重增加，因为夜间进食更容易使脂肪储存增加。\n\n人体内许多药物靶点也遵循24小时周期。这意味着药物要调节的特定蛋白质，在一天中的不同时间可能会对药物产生不同反应。既然身体对药物的反应会因服药时间不同而变化，那么在特定时间服药就可能提高药效并减少不良副作用。\n\n医生给病人开药时，很少考虑最佳服药时间。造成这种忽视主要有两个原因：第一，许多医生并不知道某些药物在一天中的特定时间效果更好；第二，大多数药物还没有被研究过在24小时周期内是否会产生不同效果。因此，医生通常让患者早晨或晚上服用大多数药物，主要是为了确保患者能遵医嘱服药。\n\n50多年前，研究人员发现降胆固醇药辛伐他汀在夜间服用比白天服用更能有效降低胆固醇水平。这是因为该药物所作用的肝脏酶在夜间更活跃。\n\n在错误时间服药甚至可能造成伤害。我和同事曾想知道，全球外科手术中最常用的镇静剂咪达唑仑，是否会干扰夜间保护心脏的生物钟。目前，关于咪达唑仑应在何时给药还没有相关指南。\n\n我们还需要开展更多研究，以确定不同疾病治疗的最佳给药时间。我认为，把服药时间纳入考虑可以提高治疗效果，并帮助世界上更多患者受益。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_1_passage_one_q49",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第1套 Passage One",
+    "questionNo": 49,
+    "stem": "Why do doctors advise patients to take most drugs in the morning or in the evening?",
+    "stemTranslation": "医生为什么建议患者在早晨或晚上服用大多数药物？",
+    "options": [
+      "A) To discourage them from making complaints.",
+      "B) To ensure they take the drugs as instructed.",
+      "C) To comply with new research findings strictly.",
+      "D) To guarantee the maximum effect of the drugs."
+    ],
+    "answer": "B",
+    "answerTranslation": "为了确保他们能按医嘱服药。",
+    "contextRaw": "All living organisms on Earth are exposed to a 24-hour day-night cycle. This cycle is the reason why people rest at night and are active during the day. Consequently, all human body functions also follow this daily rhythm, and the timing of behaviors like exercise or food intake can significantly influence your health. For example, eating at night can lead to weight gain over time because food intake at night leads to increased fat storage.\n\nMany drug targets in the body follow a 24-hour cycle, too. This means that the specific proteins a drug is designed to modify can react differently to the medicine over the course of a 24-hour time period. Because how the body responds to a drug can differ depending on the time it is taken, it logically follows that taking medicines at specific times could help increase their effectiveness and reduce unwanted side effects.\n\nWhen doctors prescribe medicine for people, they rarely consider the best time to take it. There are two main reasons for that oversight. First, many physicians are not aware that some drugs work better during a specific time of the day. And second, most drugs have not been studied for possible different effects during a 24-hour cycle. Therefore, patients are directed to take most drugs during the morning or evening primarily to ensure compliance.\n\nOver 50 years ago, researchers found that the cholesterol drug simvastatin is more effective at lowering cholesterol levels when taken at night rather than during the day. This is because the liver enzyme these drugs target is more active at night.\n\nTaking medicine at the wrong time can even cause harm. My colleagues and I wondered whether midazolam, the most common sedative used in surgical procedures worldwide, might interfere with the internal clock that protects the heart at night. Currently, there are no guidelines regarding when midazolam should be administered.\n\nMore research is needed to determine the best times to administer treatments for different diseases. I believe taking drug timing into account could help make treatments more effective and help more people worldwide.",
+    "contextTranslation": "地球上所有生物都处在24小时昼夜交替的周期中。正是这一周期决定了人们夜间休息、白天活动的规律。因此，人体各项功能也遵循这种日常节律，运动、进食等行为发生的时间会明显影响健康。例如，夜间进食可能随着时间推移导致体重增加，因为夜间进食更容易使脂肪储存增加。\n\n人体内许多药物靶点也遵循24小时周期。这意味着药物要调节的特定蛋白质，在一天中的不同时间可能会对药物产生不同反应。既然身体对药物的反应会因服药时间不同而变化，那么在特定时间服药就可能提高药效并减少不良副作用。\n\n医生给病人开药时，很少考虑最佳服药时间。造成这种忽视主要有两个原因：第一，许多医生并不知道某些药物在一天中的特定时间效果更好；第二，大多数药物还没有被研究过在24小时周期内是否会产生不同效果。因此，医生通常让患者早晨或晚上服用大多数药物，主要是为了确保患者能遵医嘱服药。\n\n50多年前，研究人员发现降胆固醇药辛伐他汀在夜间服用比白天服用更能有效降低胆固醇水平。这是因为该药物所作用的肝脏酶在夜间更活跃。\n\n在错误时间服药甚至可能造成伤害。我和同事曾想知道，全球外科手术中最常用的镇静剂咪达唑仑，是否会干扰夜间保护心脏的生物钟。目前，关于咪达唑仑应在何时给药还没有相关指南。\n\n我们还需要开展更多研究，以确定不同疾病治疗的最佳给药时间。我认为，把服药时间纳入考虑可以提高治疗效果，并帮助世界上更多患者受益。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_1_passage_one_q50",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第1套 Passage One",
+    "questionNo": 50,
+    "stem": "What does the author suggest near the end of the passage?",
+    "stemTranslation": "作者在文章结尾附近提出了什么建议？",
+    "options": [
+      "A) Considering drug-taking timing when prescribing drugs for patients.",
+      "B) Making treatments less complex by taking drug timing into account.",
+      "C) Conducting more studies to find out the best timing for treating different diseases.",
+      "D) Finding out the most effective drugs for treating diseases through further research."
+    ],
+    "answer": "C",
+    "answerTranslation": "开展更多研究，以找出治疗不同疾病的最佳时间。",
+    "contextRaw": "All living organisms on Earth are exposed to a 24-hour day-night cycle. This cycle is the reason why people rest at night and are active during the day. Consequently, all human body functions also follow this daily rhythm, and the timing of behaviors like exercise or food intake can significantly influence your health. For example, eating at night can lead to weight gain over time because food intake at night leads to increased fat storage.\n\nMany drug targets in the body follow a 24-hour cycle, too. This means that the specific proteins a drug is designed to modify can react differently to the medicine over the course of a 24-hour time period. Because how the body responds to a drug can differ depending on the time it is taken, it logically follows that taking medicines at specific times could help increase their effectiveness and reduce unwanted side effects.\n\nWhen doctors prescribe medicine for people, they rarely consider the best time to take it. There are two main reasons for that oversight. First, many physicians are not aware that some drugs work better during a specific time of the day. And second, most drugs have not been studied for possible different effects during a 24-hour cycle. Therefore, patients are directed to take most drugs during the morning or evening primarily to ensure compliance.\n\nOver 50 years ago, researchers found that the cholesterol drug simvastatin is more effective at lowering cholesterol levels when taken at night rather than during the day. This is because the liver enzyme these drugs target is more active at night.\n\nTaking medicine at the wrong time can even cause harm. My colleagues and I wondered whether midazolam, the most common sedative used in surgical procedures worldwide, might interfere with the internal clock that protects the heart at night. Currently, there are no guidelines regarding when midazolam should be administered.\n\nMore research is needed to determine the best times to administer treatments for different diseases. I believe taking drug timing into account could help make treatments more effective and help more people worldwide.",
+    "contextTranslation": "地球上所有生物都处在24小时昼夜交替的周期中。正是这一周期决定了人们夜间休息、白天活动的规律。因此，人体各项功能也遵循这种日常节律，运动、进食等行为发生的时间会明显影响健康。例如，夜间进食可能随着时间推移导致体重增加，因为夜间进食更容易使脂肪储存增加。\n\n人体内许多药物靶点也遵循24小时周期。这意味着药物要调节的特定蛋白质，在一天中的不同时间可能会对药物产生不同反应。既然身体对药物的反应会因服药时间不同而变化，那么在特定时间服药就可能提高药效并减少不良副作用。\n\n医生给病人开药时，很少考虑最佳服药时间。造成这种忽视主要有两个原因：第一，许多医生并不知道某些药物在一天中的特定时间效果更好；第二，大多数药物还没有被研究过在24小时周期内是否会产生不同效果。因此，医生通常让患者早晨或晚上服用大多数药物，主要是为了确保患者能遵医嘱服药。\n\n50多年前，研究人员发现降胆固醇药辛伐他汀在夜间服用比白天服用更能有效降低胆固醇水平。这是因为该药物所作用的肝脏酶在夜间更活跃。\n\n在错误时间服药甚至可能造成伤害。我和同事曾想知道，全球外科手术中最常用的镇静剂咪达唑仑，是否会干扰夜间保护心脏的生物钟。目前，关于咪达唑仑应在何时给药还没有相关指南。\n\n我们还需要开展更多研究，以确定不同疾病治疗的最佳给药时间。我认为，把服药时间纳入考虑可以提高治疗效果，并帮助世界上更多患者受益。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_1_passage_two_q51",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第1套 Passage Two",
+    "questionNo": 51,
+    "stem": "What do we learn from the passage about the economics professor and her hairdresser?",
+    "stemTranslation": "关于经济学教授和她的理发师，文章告诉我们什么？",
+    "options": [
+      "A) They differ in their reasons for continuing to work.",
+      "B) They are both committed to working into their 70s.",
+      "C) They are happy about their current financial situation.",
+      "D) They hold different views about postponing retirement."
+    ],
+    "answer": "A",
+    "answerTranslation": "她们继续工作的原因不同。",
+    "contextRaw": "Katharine Abraham, an economics professor, was chatting with her hairdresser about retirement plans. The economist said she plans to continue working because she wants to. The hairdresser agreed but for a different reason: She needs the money.\n\nBoth scenarios are contributing to a big increase in the number of people in the US working into their 70s. Over the past 20 years, the share of Americans working in their 70s has risen from less than 10% to nearly 15%.\n\nIn addition to people being healthier and living much longer, economists say that a combination of financial considerations such as years of slow rise in real wages and a shift away from traditional pensions in the private sector are some of the reasons people delay retirement. The decline of manufacturing and the increase in the number of people working in less labor-intensive occupations also has contributed to the trend, says Abraham, who researches work and retirement decisions of older Americans.\n\n\"Which matters more depends on what your history up until that point has been in the type of work you're doing,\" Abraham says.\n\nThe overall trend is hitting Americans of all different levels of educational attainment, although the percentages vary by category. The share of Americans with bachelor's degrees who were working into their 70s reached nearly 20% in 2018. For those with a high school degree or less, the proportion of those working in their 70s had risen to around 10%, while those with some college education were in the middle at around 15%.\n\nMartin Neil Baily, an economist who is leading a research project on retirement security, notes that quitting a career can lead to feelings of isolation and loneliness, particularly for men. He suggests that many college-educated workers are choosing to stay in the labor force more for social benefits than for financial reasons. They're also more likely to be in professional occupations where they tend to enjoy their work more.\n\nWorkers in more physical jobs, meanwhile, may be more likely to look forward to retiring, Baily says, suggesting those who stay on are more likely doing so for financial reasons.",
+    "contextTranslation": "经济学教授凯瑟琳·亚伯拉罕曾和她的理发师聊起退休计划。这位经济学家说，她打算继续工作，因为她想工作。理发师也表示赞同，但理由不同：她需要钱。\n\n这两种情况都推动了美国70多岁仍在工作的人数大幅增加。过去20年里，美国70多岁仍在工作的比例从不到10%上升到接近15%。\n\n经济学家表示，除了人们更加健康、寿命更长之外，多种经济因素也是人们推迟退休的原因，例如实际工资多年增长缓慢，以及私营部门逐渐脱离传统养老金制度。亚伯拉罕研究美国老年人的工作与退休决策，她还指出，制造业衰退和从事劳动强度较低职业的人数增加，也推动了这一趋势。\n\n亚伯拉罕说：“哪种因素更重要，取决于你此前从事的工作类型和个人经历。”\n\n总体趋势影响着不同教育水平的美国人，尽管各类别比例不同。2018年，拥有学士学位且工作到70多岁的美国人比例接近20%。高中及以下学历者中，70多岁仍工作的比例上升到约10%；受过部分大学教育的人群则处于中间水平，约为15%。\n\n正在领导退休保障研究项目的经济学家马丁·尼尔·贝利指出，结束职业生涯可能会带来孤立和孤独感，尤其对男性而言。他认为，许多受过大学教育的劳动者选择继续留在劳动力市场，更多是出于社交收益，而非经济原因。他们也更可能从事专业性职业，并且往往更享受自己的工作。\n\n贝利表示，相比之下，从事体力劳动的人可能更期待退休；那些继续工作的人更可能是出于经济原因。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_1_passage_two_q52",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第1套 Passage Two",
+    "questionNo": 52,
+    "stem": "What is one of the reasons for people to delay retirement?",
+    "stemTranslation": "人们推迟退休的原因之一是什么？",
+    "options": [
+      "A) More and more people have switched to less intellectually challenging jobs.",
+      "B) The number of jobs suitable for older people has increased in the private sector.",
+      "C) The rate of wage increase in terms of purchasing power has slowed down for years.",
+      "D) More and more people in the workplace find it hard to rely on traditional pensions."
+    ],
+    "answer": "C",
+    "answerTranslation": "按购买力计算的工资增长速度多年来一直放缓。",
+    "contextRaw": "Katharine Abraham, an economics professor, was chatting with her hairdresser about retirement plans. The economist said she plans to continue working because she wants to. The hairdresser agreed but for a different reason: She needs the money.\n\nBoth scenarios are contributing to a big increase in the number of people in the US working into their 70s. Over the past 20 years, the share of Americans working in their 70s has risen from less than 10% to nearly 15%.\n\nIn addition to people being healthier and living much longer, economists say that a combination of financial considerations such as years of slow rise in real wages and a shift away from traditional pensions in the private sector are some of the reasons people delay retirement. The decline of manufacturing and the increase in the number of people working in less labor-intensive occupations also has contributed to the trend, says Abraham, who researches work and retirement decisions of older Americans.\n\n\"Which matters more depends on what your history up until that point has been in the type of work you're doing,\" Abraham says.\n\nThe overall trend is hitting Americans of all different levels of educational attainment, although the percentages vary by category. The share of Americans with bachelor's degrees who were working into their 70s reached nearly 20% in 2018. For those with a high school degree or less, the proportion of those working in their 70s had risen to around 10%, while those with some college education were in the middle at around 15%.\n\nMartin Neil Baily, an economist who is leading a research project on retirement security, notes that quitting a career can lead to feelings of isolation and loneliness, particularly for men. He suggests that many college-educated workers are choosing to stay in the labor force more for social benefits than for financial reasons. They're also more likely to be in professional occupations where they tend to enjoy their work more.\n\nWorkers in more physical jobs, meanwhile, may be more likely to look forward to retiring, Baily says, suggesting those who stay on are more likely doing so for financial reasons.",
+    "contextTranslation": "经济学教授凯瑟琳·亚伯拉罕曾和她的理发师聊起退休计划。这位经济学家说，她打算继续工作，因为她想工作。理发师也表示赞同，但理由不同：她需要钱。\n\n这两种情况都推动了美国70多岁仍在工作的人数大幅增加。过去20年里，美国70多岁仍在工作的比例从不到10%上升到接近15%。\n\n经济学家表示，除了人们更加健康、寿命更长之外，多种经济因素也是人们推迟退休的原因，例如实际工资多年增长缓慢，以及私营部门逐渐脱离传统养老金制度。亚伯拉罕研究美国老年人的工作与退休决策，她还指出，制造业衰退和从事劳动强度较低职业的人数增加，也推动了这一趋势。\n\n亚伯拉罕说：“哪种因素更重要，取决于你此前从事的工作类型和个人经历。”\n\n总体趋势影响着不同教育水平的美国人，尽管各类别比例不同。2018年，拥有学士学位且工作到70多岁的美国人比例接近20%。高中及以下学历者中，70多岁仍工作的比例上升到约10%；受过部分大学教育的人群则处于中间水平，约为15%。\n\n正在领导退休保障研究项目的经济学家马丁·尼尔·贝利指出，结束职业生涯可能会带来孤立和孤独感，尤其对男性而言。他认为，许多受过大学教育的劳动者选择继续留在劳动力市场，更多是出于社交收益，而非经济原因。他们也更可能从事专业性职业，并且往往更享受自己的工作。\n\n贝利表示，相比之下，从事体力劳动的人可能更期待退休；那些继续工作的人更可能是出于经济原因。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_1_passage_two_q53",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第1套 Passage Two",
+    "questionNo": 53,
+    "stem": "What is the general trend in people delaying retirement?",
+    "stemTranslation": "人们推迟退休的总体趋势是什么？",
+    "options": [
+      "A) The higher their earnings, the more likely they are tempted to delay retirement.",
+      "B) Those who have more job satisfaction tend to retire later than those who have less.",
+      "C) More men than women are likely to stay in the labor force until their late seventies.",
+      "D) The higher their educational level, the more likely they are to delay retirement."
+    ],
+    "answer": "D",
+    "answerTranslation": "教育水平越高，越可能推迟退休。",
+    "contextRaw": "Katharine Abraham, an economics professor, was chatting with her hairdresser about retirement plans. The economist said she plans to continue working because she wants to. The hairdresser agreed but for a different reason: She needs the money.\n\nBoth scenarios are contributing to a big increase in the number of people in the US working into their 70s. Over the past 20 years, the share of Americans working in their 70s has risen from less than 10% to nearly 15%.\n\nIn addition to people being healthier and living much longer, economists say that a combination of financial considerations such as years of slow rise in real wages and a shift away from traditional pensions in the private sector are some of the reasons people delay retirement. The decline of manufacturing and the increase in the number of people working in less labor-intensive occupations also has contributed to the trend, says Abraham, who researches work and retirement decisions of older Americans.\n\n\"Which matters more depends on what your history up until that point has been in the type of work you're doing,\" Abraham says.\n\nThe overall trend is hitting Americans of all different levels of educational attainment, although the percentages vary by category. The share of Americans with bachelor's degrees who were working into their 70s reached nearly 20% in 2018. For those with a high school degree or less, the proportion of those working in their 70s had risen to around 10%, while those with some college education were in the middle at around 15%.\n\nMartin Neil Baily, an economist who is leading a research project on retirement security, notes that quitting a career can lead to feelings of isolation and loneliness, particularly for men. He suggests that many college-educated workers are choosing to stay in the labor force more for social benefits than for financial reasons. They're also more likely to be in professional occupations where they tend to enjoy their work more.\n\nWorkers in more physical jobs, meanwhile, may be more likely to look forward to retiring, Baily says, suggesting those who stay on are more likely doing so for financial reasons.",
+    "contextTranslation": "经济学教授凯瑟琳·亚伯拉罕曾和她的理发师聊起退休计划。这位经济学家说，她打算继续工作，因为她想工作。理发师也表示赞同，但理由不同：她需要钱。\n\n这两种情况都推动了美国70多岁仍在工作的人数大幅增加。过去20年里，美国70多岁仍在工作的比例从不到10%上升到接近15%。\n\n经济学家表示，除了人们更加健康、寿命更长之外，多种经济因素也是人们推迟退休的原因，例如实际工资多年增长缓慢，以及私营部门逐渐脱离传统养老金制度。亚伯拉罕研究美国老年人的工作与退休决策，她还指出，制造业衰退和从事劳动强度较低职业的人数增加，也推动了这一趋势。\n\n亚伯拉罕说：“哪种因素更重要，取决于你此前从事的工作类型和个人经历。”\n\n总体趋势影响着不同教育水平的美国人，尽管各类别比例不同。2018年，拥有学士学位且工作到70多岁的美国人比例接近20%。高中及以下学历者中，70多岁仍工作的比例上升到约10%；受过部分大学教育的人群则处于中间水平，约为15%。\n\n正在领导退休保障研究项目的经济学家马丁·尼尔·贝利指出，结束职业生涯可能会带来孤立和孤独感，尤其对男性而言。他认为，许多受过大学教育的劳动者选择继续留在劳动力市场，更多是出于社交收益，而非经济原因。他们也更可能从事专业性职业，并且往往更享受自己的工作。\n\n贝利表示，相比之下，从事体力劳动的人可能更期待退休；那些继续工作的人更可能是出于经济原因。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_1_passage_two_q54",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第1套 Passage Two",
+    "questionNo": 54,
+    "stem": "What is the chief reason for college-educated workers delaying retirement according to an economist?",
+    "stemTranslation": "根据一位经济学家的说法，受过大学教育的劳动者推迟退休的主要原因是什么？",
+    "options": [
+      "A) Enjoying financial security.",
+      "B) Staying connected socially.",
+      "C) Contributing more professionally.",
+      "D) Increasing social security payments."
+    ],
+    "answer": "B",
+    "answerTranslation": "保持社会联系。",
+    "contextRaw": "Katharine Abraham, an economics professor, was chatting with her hairdresser about retirement plans. The economist said she plans to continue working because she wants to. The hairdresser agreed but for a different reason: She needs the money.\n\nBoth scenarios are contributing to a big increase in the number of people in the US working into their 70s. Over the past 20 years, the share of Americans working in their 70s has risen from less than 10% to nearly 15%.\n\nIn addition to people being healthier and living much longer, economists say that a combination of financial considerations such as years of slow rise in real wages and a shift away from traditional pensions in the private sector are some of the reasons people delay retirement. The decline of manufacturing and the increase in the number of people working in less labor-intensive occupations also has contributed to the trend, says Abraham, who researches work and retirement decisions of older Americans.\n\n\"Which matters more depends on what your history up until that point has been in the type of work you're doing,\" Abraham says.\n\nThe overall trend is hitting Americans of all different levels of educational attainment, although the percentages vary by category. The share of Americans with bachelor's degrees who were working into their 70s reached nearly 20% in 2018. For those with a high school degree or less, the proportion of those working in their 70s had risen to around 10%, while those with some college education were in the middle at around 15%.\n\nMartin Neil Baily, an economist who is leading a research project on retirement security, notes that quitting a career can lead to feelings of isolation and loneliness, particularly for men. He suggests that many college-educated workers are choosing to stay in the labor force more for social benefits than for financial reasons. They're also more likely to be in professional occupations where they tend to enjoy their work more.\n\nWorkers in more physical jobs, meanwhile, may be more likely to look forward to retiring, Baily says, suggesting those who stay on are more likely doing so for financial reasons.",
+    "contextTranslation": "经济学教授凯瑟琳·亚伯拉罕曾和她的理发师聊起退休计划。这位经济学家说，她打算继续工作，因为她想工作。理发师也表示赞同，但理由不同：她需要钱。\n\n这两种情况都推动了美国70多岁仍在工作的人数大幅增加。过去20年里，美国70多岁仍在工作的比例从不到10%上升到接近15%。\n\n经济学家表示，除了人们更加健康、寿命更长之外，多种经济因素也是人们推迟退休的原因，例如实际工资多年增长缓慢，以及私营部门逐渐脱离传统养老金制度。亚伯拉罕研究美国老年人的工作与退休决策，她还指出，制造业衰退和从事劳动强度较低职业的人数增加，也推动了这一趋势。\n\n亚伯拉罕说：“哪种因素更重要，取决于你此前从事的工作类型和个人经历。”\n\n总体趋势影响着不同教育水平的美国人，尽管各类别比例不同。2018年，拥有学士学位且工作到70多岁的美国人比例接近20%。高中及以下学历者中，70多岁仍工作的比例上升到约10%；受过部分大学教育的人群则处于中间水平，约为15%。\n\n正在领导退休保障研究项目的经济学家马丁·尼尔·贝利指出，结束职业生涯可能会带来孤立和孤独感，尤其对男性而言。他认为，许多受过大学教育的劳动者选择继续留在劳动力市场，更多是出于社交收益，而非经济原因。他们也更可能从事专业性职业，并且往往更享受自己的工作。\n\n贝利表示，相比之下，从事体力劳动的人可能更期待退休；那些继续工作的人更可能是出于经济原因。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_1_passage_two_q55",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第1套 Passage Two",
+    "questionNo": 55,
+    "stem": "What does the passage say about people doing manual work?",
+    "stemTranslation": "文章对从事体力劳动的人说了什么？",
+    "options": [
+      "A) They are eager to enjoy life after retiring.",
+      "B) They are likely to have financial troubles.",
+      "C) They generally don't enjoy doing it.",
+      "D) They tend to anticipate retirement."
+    ],
+    "answer": "D",
+    "answerTranslation": "他们往往期待退休。",
+    "contextRaw": "Katharine Abraham, an economics professor, was chatting with her hairdresser about retirement plans. The economist said she plans to continue working because she wants to. The hairdresser agreed but for a different reason: She needs the money.\n\nBoth scenarios are contributing to a big increase in the number of people in the US working into their 70s. Over the past 20 years, the share of Americans working in their 70s has risen from less than 10% to nearly 15%.\n\nIn addition to people being healthier and living much longer, economists say that a combination of financial considerations such as years of slow rise in real wages and a shift away from traditional pensions in the private sector are some of the reasons people delay retirement. The decline of manufacturing and the increase in the number of people working in less labor-intensive occupations also has contributed to the trend, says Abraham, who researches work and retirement decisions of older Americans.\n\n\"Which matters more depends on what your history up until that point has been in the type of work you're doing,\" Abraham says.\n\nThe overall trend is hitting Americans of all different levels of educational attainment, although the percentages vary by category. The share of Americans with bachelor's degrees who were working into their 70s reached nearly 20% in 2018. For those with a high school degree or less, the proportion of those working in their 70s had risen to around 10%, while those with some college education were in the middle at around 15%.\n\nMartin Neil Baily, an economist who is leading a research project on retirement security, notes that quitting a career can lead to feelings of isolation and loneliness, particularly for men. He suggests that many college-educated workers are choosing to stay in the labor force more for social benefits than for financial reasons. They're also more likely to be in professional occupations where they tend to enjoy their work more.\n\nWorkers in more physical jobs, meanwhile, may be more likely to look forward to retiring, Baily says, suggesting those who stay on are more likely doing so for financial reasons.",
+    "contextTranslation": "经济学教授凯瑟琳·亚伯拉罕曾和她的理发师聊起退休计划。这位经济学家说，她打算继续工作，因为她想工作。理发师也表示赞同，但理由不同：她需要钱。\n\n这两种情况都推动了美国70多岁仍在工作的人数大幅增加。过去20年里，美国70多岁仍在工作的比例从不到10%上升到接近15%。\n\n经济学家表示，除了人们更加健康、寿命更长之外，多种经济因素也是人们推迟退休的原因，例如实际工资多年增长缓慢，以及私营部门逐渐脱离传统养老金制度。亚伯拉罕研究美国老年人的工作与退休决策，她还指出，制造业衰退和从事劳动强度较低职业的人数增加，也推动了这一趋势。\n\n亚伯拉罕说：“哪种因素更重要，取决于你此前从事的工作类型和个人经历。”\n\n总体趋势影响着不同教育水平的美国人，尽管各类别比例不同。2018年，拥有学士学位且工作到70多岁的美国人比例接近20%。高中及以下学历者中，70多岁仍工作的比例上升到约10%；受过部分大学教育的人群则处于中间水平，约为15%。\n\n正在领导退休保障研究项目的经济学家马丁·尼尔·贝利指出，结束职业生涯可能会带来孤立和孤独感，尤其对男性而言。他认为，许多受过大学教育的劳动者选择继续留在劳动力市场，更多是出于社交收益，而非经济原因。他们也更可能从事专业性职业，并且往往更享受自己的工作。\n\n贝利表示，相比之下，从事体力劳动的人可能更期待退休；那些继续工作的人更可能是出于经济原因。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_2_passage_one_q46",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第2套 Passage One",
+    "questionNo": 46,
+    "stem": "What do we learn about advertising campaigns from the snack food companies?",
+    "stemTranslation": "关于零食公司的广告宣传，我们了解到什么？",
+    "options": [
+      "A) They convey the idea that their products are ok if consumers exercise more.",
+      "B) They send the message that bad diets are responsible for Americans' obesity.",
+      "C) They usually feature sports stars to emphasize the benefits of their snack foods.",
+      "D) They claim that lack of exercise is to blame for the increasing obesity rates."
+    ],
+    "answer": "A",
+    "answerTranslation": "它们传递出一种观念：只要消费者多锻炼，食用这些产品就没有问题。",
+    "contextRaw": "Junk food is now a staple of many Americans' diets. Advertising campaigns from the snack food companies, often featuring sports stars, send the message that we can neutralize any negative effects of consuming their products simply by getting more physical exercise. But recent studies show a lack of exercise is not to blame for rising obesity rates. Bad diets are.\n\nInterventions to help reduce junk food consumption are especially important for children and teenagers. Prevention is better than cure because obesity is so difficult to treat. Unfortunately, while health education has shown some success among young children, teens have been harder to reach.\n\nNow a large-scale study has tried an innovative approach to change teenagers' attitudes towards healthy eating, and the results are promising. The researchers argued that previous interventions have probably been unsuccessful because of a major flaw: they focused on a future, healthier you and assumed that this would be enough motivation for teenagers. In contrast, the new intervention cleverly exploits teenagers' instinct for rebelliousness and autonomy, and the value they place on social justice.\n\nTo do this, researchers had students read an article on the food industry. It revealed a secret about the manipulative and deceptive strategies used to make junk food more addictive and characterize the products as healthy. The article also explained how advertising campaigns specifically target very young and poor people, causing harm for these vulnerable groups. Afterwards, the participants read a fictional survey of teens who wanted to \"fight back against the companies by buying and eating less processed food\".\n\nAfter the intervention, participants associated healthy eating with autonomy and social justice. The teenagers also rated healthy eating as being more appealing. Importantly, there were also some promising effects of the new intervention on actual behavior. A day later the students were offered a choice of snacks and drinks in a seemingly unrelated context. The teens chose healthy snacks and drinks, such as fruit or water, more often over unhealthy options, like biscuits and soda. Apparently associating a healthy diet with teenagers' own values seems to be a promising avenue to prevent obesity.",
+    "contextTranslation": "垃圾食品如今已成为许多美国人饮食中的常见组成部分。零食公司的广告宣传常常请体育明星代言，传递出这样一种信息：只要多进行体育锻炼，就能抵消食用其产品带来的任何负面影响。但最新研究表明，肥胖率上升并不是因为缺乏运动，而是因为不良饮食。\n\n帮助减少垃圾食品摄入的干预措施对儿童和青少年尤其重要。肥胖很难治疗，因此预防胜于治疗。遗憾的是，健康教育虽然在低龄儿童中取得了一定成效，但对青少年的影响较弱。\n\n如今，一项大规模研究尝试用创新方法改变青少年对健康饮食的态度，结果令人期待。研究人员认为，以往干预措施之所以大多失败，是因为存在一个重大缺陷：它们关注的是未来更健康的自己，并假定这一点足以成为青少年的动力。相比之下，新的干预措施巧妙地利用了青少年叛逆、追求自主的天性，以及他们对社会公平的重视。\n\n为此，研究人员让学生阅读一篇关于食品行业的文章。文章揭露了食品行业为使垃圾食品更容易让人上瘾、并把产品包装成健康食品而采用的操纵性和欺骗性策略。文章还解释了广告宣传如何专门针对年幼和贫困人群，从而伤害这些弱势群体。随后，参与者阅读了一份虚构的青少年调查，调查中青少年表示希望“通过少购买、少食用加工食品来反击这些公司”。\n\n干预后，参与者把健康饮食与自主意识和社会公平联系起来。青少年也认为健康饮食更有吸引力。更重要的是，这种新干预措施对实际行为也产生了一些积极影响。一天后，学生们在一个看似无关的场景中被提供零食和饮料选择。与饼干、汽水等不健康选项相比，青少年更常选择水果、水等健康零食和饮品。显然，把健康饮食与青少年自身价值观联系起来，似乎是预防肥胖的一条有希望的途径。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_2_passage_one_q47",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第2套 Passage One",
+    "questionNo": 47,
+    "stem": "What does the passage say about health education?",
+    "stemTranslation": "文章如何评价健康教育？",
+    "options": [
+      "A) It has shed light on teens' instinct for rebellion and autonomy.",
+      "B) It has placed much more emphasis on cure than on prevention.",
+      "C) It has contributed little to the campaigns against obesity.",
+      "D) It has largely failed to turn teens away from junk food."
+    ],
+    "answer": "D",
+    "answerTranslation": "它在很大程度上未能引导青少年远离垃圾食品。",
+    "contextRaw": "Junk food is now a staple of many Americans' diets. Advertising campaigns from the snack food companies, often featuring sports stars, send the message that we can neutralize any negative effects of consuming their products simply by getting more physical exercise. But recent studies show a lack of exercise is not to blame for rising obesity rates. Bad diets are.\n\nInterventions to help reduce junk food consumption are especially important for children and teenagers. Prevention is better than cure because obesity is so difficult to treat. Unfortunately, while health education has shown some success among young children, teens have been harder to reach.\n\nNow a large-scale study has tried an innovative approach to change teenagers' attitudes towards healthy eating, and the results are promising. The researchers argued that previous interventions have probably been unsuccessful because of a major flaw: they focused on a future, healthier you and assumed that this would be enough motivation for teenagers. In contrast, the new intervention cleverly exploits teenagers' instinct for rebelliousness and autonomy, and the value they place on social justice.\n\nTo do this, researchers had students read an article on the food industry. It revealed a secret about the manipulative and deceptive strategies used to make junk food more addictive and characterize the products as healthy. The article also explained how advertising campaigns specifically target very young and poor people, causing harm for these vulnerable groups. Afterwards, the participants read a fictional survey of teens who wanted to \"fight back against the companies by buying and eating less processed food\".\n\nAfter the intervention, participants associated healthy eating with autonomy and social justice. The teenagers also rated healthy eating as being more appealing. Importantly, there were also some promising effects of the new intervention on actual behavior. A day later the students were offered a choice of snacks and drinks in a seemingly unrelated context. The teens chose healthy snacks and drinks, such as fruit or water, more often over unhealthy options, like biscuits and soda. Apparently associating a healthy diet with teenagers' own values seems to be a promising avenue to prevent obesity.",
+    "contextTranslation": "垃圾食品如今已成为许多美国人饮食中的常见组成部分。零食公司的广告宣传常常请体育明星代言，传递出这样一种信息：只要多进行体育锻炼，就能抵消食用其产品带来的任何负面影响。但最新研究表明，肥胖率上升并不是因为缺乏运动，而是因为不良饮食。\n\n帮助减少垃圾食品摄入的干预措施对儿童和青少年尤其重要。肥胖很难治疗，因此预防胜于治疗。遗憾的是，健康教育虽然在低龄儿童中取得了一定成效，但对青少年的影响较弱。\n\n如今，一项大规模研究尝试用创新方法改变青少年对健康饮食的态度，结果令人期待。研究人员认为，以往干预措施之所以大多失败，是因为存在一个重大缺陷：它们关注的是未来更健康的自己，并假定这一点足以成为青少年的动力。相比之下，新的干预措施巧妙地利用了青少年叛逆、追求自主的天性，以及他们对社会公平的重视。\n\n为此，研究人员让学生阅读一篇关于食品行业的文章。文章揭露了食品行业为使垃圾食品更容易让人上瘾、并把产品包装成健康食品而采用的操纵性和欺骗性策略。文章还解释了广告宣传如何专门针对年幼和贫困人群，从而伤害这些弱势群体。随后，参与者阅读了一份虚构的青少年调查，调查中青少年表示希望“通过少购买、少食用加工食品来反击这些公司”。\n\n干预后，参与者把健康饮食与自主意识和社会公平联系起来。青少年也认为健康饮食更有吸引力。更重要的是，这种新干预措施对实际行为也产生了一些积极影响。一天后，学生们在一个看似无关的场景中被提供零食和饮料选择。与饼干、汽水等不健康选项相比，青少年更常选择水果、水等健康零食和饮品。显然，把健康饮食与青少年自身价值观联系起来，似乎是预防肥胖的一条有希望的途径。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_2_passage_one_q48",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第2套 Passage One",
+    "questionNo": 48,
+    "stem": "What is a major flaw in previous interventions to help reduce junk food consumption?",
+    "stemTranslation": "以往帮助减少垃圾食品摄入的干预措施有什么重大缺陷？",
+    "options": [
+      "A) They motivated teens to stay away from junk food only temporarily.",
+      "B) They focused on the benefits young people would reap in the future.",
+      "C) They were based on the assumption that motivation was the only key.",
+      "D) They were incapable of appealing to teens' instinct for rebelliousness."
+    ],
+    "answer": "B",
+    "answerTranslation": "它们把重点放在年轻人未来能够获得的好处上。",
+    "contextRaw": "Junk food is now a staple of many Americans' diets. Advertising campaigns from the snack food companies, often featuring sports stars, send the message that we can neutralize any negative effects of consuming their products simply by getting more physical exercise. But recent studies show a lack of exercise is not to blame for rising obesity rates. Bad diets are.\n\nInterventions to help reduce junk food consumption are especially important for children and teenagers. Prevention is better than cure because obesity is so difficult to treat. Unfortunately, while health education has shown some success among young children, teens have been harder to reach.\n\nNow a large-scale study has tried an innovative approach to change teenagers' attitudes towards healthy eating, and the results are promising. The researchers argued that previous interventions have probably been unsuccessful because of a major flaw: they focused on a future, healthier you and assumed that this would be enough motivation for teenagers. In contrast, the new intervention cleverly exploits teenagers' instinct for rebelliousness and autonomy, and the value they place on social justice.\n\nTo do this, researchers had students read an article on the food industry. It revealed a secret about the manipulative and deceptive strategies used to make junk food more addictive and characterize the products as healthy. The article also explained how advertising campaigns specifically target very young and poor people, causing harm for these vulnerable groups. Afterwards, the participants read a fictional survey of teens who wanted to \"fight back against the companies by buying and eating less processed food\".\n\nAfter the intervention, participants associated healthy eating with autonomy and social justice. The teenagers also rated healthy eating as being more appealing. Importantly, there were also some promising effects of the new intervention on actual behavior. A day later the students were offered a choice of snacks and drinks in a seemingly unrelated context. The teens chose healthy snacks and drinks, such as fruit or water, more often over unhealthy options, like biscuits and soda. Apparently associating a healthy diet with teenagers' own values seems to be a promising avenue to prevent obesity.",
+    "contextTranslation": "垃圾食品如今已成为许多美国人饮食中的常见组成部分。零食公司的广告宣传常常请体育明星代言，传递出这样一种信息：只要多进行体育锻炼，就能抵消食用其产品带来的任何负面影响。但最新研究表明，肥胖率上升并不是因为缺乏运动，而是因为不良饮食。\n\n帮助减少垃圾食品摄入的干预措施对儿童和青少年尤其重要。肥胖很难治疗，因此预防胜于治疗。遗憾的是，健康教育虽然在低龄儿童中取得了一定成效，但对青少年的影响较弱。\n\n如今，一项大规模研究尝试用创新方法改变青少年对健康饮食的态度，结果令人期待。研究人员认为，以往干预措施之所以大多失败，是因为存在一个重大缺陷：它们关注的是未来更健康的自己，并假定这一点足以成为青少年的动力。相比之下，新的干预措施巧妙地利用了青少年叛逆、追求自主的天性，以及他们对社会公平的重视。\n\n为此，研究人员让学生阅读一篇关于食品行业的文章。文章揭露了食品行业为使垃圾食品更容易让人上瘾、并把产品包装成健康食品而采用的操纵性和欺骗性策略。文章还解释了广告宣传如何专门针对年幼和贫困人群，从而伤害这些弱势群体。随后，参与者阅读了一份虚构的青少年调查，调查中青少年表示希望“通过少购买、少食用加工食品来反击这些公司”。\n\n干预后，参与者把健康饮食与自主意识和社会公平联系起来。青少年也认为健康饮食更有吸引力。更重要的是，这种新干预措施对实际行为也产生了一些积极影响。一天后，学生们在一个看似无关的场景中被提供零食和饮料选择。与饼干、汽水等不健康选项相比，青少年更常选择水果、水等健康零食和饮品。显然，把健康饮食与青少年自身价值观联系起来，似乎是预防肥胖的一条有希望的途径。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_2_passage_one_q49",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第2套 Passage One",
+    "questionNo": 49,
+    "stem": "In what way is the new intervention innovative?",
+    "stemTranslation": "新的干预措施在哪方面具有创新性？",
+    "options": [
+      "A) It emphasizes people's sense of social responsibility.",
+      "B) It cleverly exploits teenagers' personal weaknesses.",
+      "C) It takes advantage of teenagers' natural inclination.",
+      "D) It promises immediate rather than future benefits."
+    ],
+    "answer": "C",
+    "answerTranslation": "它利用了青少年的自然倾向。",
+    "contextRaw": "Junk food is now a staple of many Americans' diets. Advertising campaigns from the snack food companies, often featuring sports stars, send the message that we can neutralize any negative effects of consuming their products simply by getting more physical exercise. But recent studies show a lack of exercise is not to blame for rising obesity rates. Bad diets are.\n\nInterventions to help reduce junk food consumption are especially important for children and teenagers. Prevention is better than cure because obesity is so difficult to treat. Unfortunately, while health education has shown some success among young children, teens have been harder to reach.\n\nNow a large-scale study has tried an innovative approach to change teenagers' attitudes towards healthy eating, and the results are promising. The researchers argued that previous interventions have probably been unsuccessful because of a major flaw: they focused on a future, healthier you and assumed that this would be enough motivation for teenagers. In contrast, the new intervention cleverly exploits teenagers' instinct for rebelliousness and autonomy, and the value they place on social justice.\n\nTo do this, researchers had students read an article on the food industry. It revealed a secret about the manipulative and deceptive strategies used to make junk food more addictive and characterize the products as healthy. The article also explained how advertising campaigns specifically target very young and poor people, causing harm for these vulnerable groups. Afterwards, the participants read a fictional survey of teens who wanted to \"fight back against the companies by buying and eating less processed food\".\n\nAfter the intervention, participants associated healthy eating with autonomy and social justice. The teenagers also rated healthy eating as being more appealing. Importantly, there were also some promising effects of the new intervention on actual behavior. A day later the students were offered a choice of snacks and drinks in a seemingly unrelated context. The teens chose healthy snacks and drinks, such as fruit or water, more often over unhealthy options, like biscuits and soda. Apparently associating a healthy diet with teenagers' own values seems to be a promising avenue to prevent obesity.",
+    "contextTranslation": "垃圾食品如今已成为许多美国人饮食中的常见组成部分。零食公司的广告宣传常常请体育明星代言，传递出这样一种信息：只要多进行体育锻炼，就能抵消食用其产品带来的任何负面影响。但最新研究表明，肥胖率上升并不是因为缺乏运动，而是因为不良饮食。\n\n帮助减少垃圾食品摄入的干预措施对儿童和青少年尤其重要。肥胖很难治疗，因此预防胜于治疗。遗憾的是，健康教育虽然在低龄儿童中取得了一定成效，但对青少年的影响较弱。\n\n如今，一项大规模研究尝试用创新方法改变青少年对健康饮食的态度，结果令人期待。研究人员认为，以往干预措施之所以大多失败，是因为存在一个重大缺陷：它们关注的是未来更健康的自己，并假定这一点足以成为青少年的动力。相比之下，新的干预措施巧妙地利用了青少年叛逆、追求自主的天性，以及他们对社会公平的重视。\n\n为此，研究人员让学生阅读一篇关于食品行业的文章。文章揭露了食品行业为使垃圾食品更容易让人上瘾、并把产品包装成健康食品而采用的操纵性和欺骗性策略。文章还解释了广告宣传如何专门针对年幼和贫困人群，从而伤害这些弱势群体。随后，参与者阅读了一份虚构的青少年调查，调查中青少年表示希望“通过少购买、少食用加工食品来反击这些公司”。\n\n干预后，参与者把健康饮食与自主意识和社会公平联系起来。青少年也认为健康饮食更有吸引力。更重要的是，这种新干预措施对实际行为也产生了一些积极影响。一天后，学生们在一个看似无关的场景中被提供零食和饮料选择。与饼干、汽水等不健康选项相比，青少年更常选择水果、水等健康零食和饮品。显然，把健康饮食与青少年自身价值观联系起来，似乎是预防肥胖的一条有希望的途径。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_2_passage_one_q50",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第2套 Passage One",
+    "questionNo": 50,
+    "stem": "What conclusion can be drawn from the new research?",
+    "stemTranslation": "从这项新研究中可以得出什么结论？",
+    "options": [
+      "A) A totally different approach could be adopted to combat advertising campaigns for snack food.",
+      "B) An effective intervention has to be found to persuade teenagers to switch to a healthier lifestyle.",
+      "C) Obesity can be hopefully prevented by building links between teenagers' values and healthy eating.",
+      "D) An innovative way to beat obesity is to expose food companies' manipulative and deceptive practices."
+    ],
+    "answer": "C",
+    "answerTranslation": "通过把青少年的价值观与健康饮食联系起来，肥胖有望得到预防。",
+    "contextRaw": "Junk food is now a staple of many Americans' diets. Advertising campaigns from the snack food companies, often featuring sports stars, send the message that we can neutralize any negative effects of consuming their products simply by getting more physical exercise. But recent studies show a lack of exercise is not to blame for rising obesity rates. Bad diets are.\n\nInterventions to help reduce junk food consumption are especially important for children and teenagers. Prevention is better than cure because obesity is so difficult to treat. Unfortunately, while health education has shown some success among young children, teens have been harder to reach.\n\nNow a large-scale study has tried an innovative approach to change teenagers' attitudes towards healthy eating, and the results are promising. The researchers argued that previous interventions have probably been unsuccessful because of a major flaw: they focused on a future, healthier you and assumed that this would be enough motivation for teenagers. In contrast, the new intervention cleverly exploits teenagers' instinct for rebelliousness and autonomy, and the value they place on social justice.\n\nTo do this, researchers had students read an article on the food industry. It revealed a secret about the manipulative and deceptive strategies used to make junk food more addictive and characterize the products as healthy. The article also explained how advertising campaigns specifically target very young and poor people, causing harm for these vulnerable groups. Afterwards, the participants read a fictional survey of teens who wanted to \"fight back against the companies by buying and eating less processed food\".\n\nAfter the intervention, participants associated healthy eating with autonomy and social justice. The teenagers also rated healthy eating as being more appealing. Importantly, there were also some promising effects of the new intervention on actual behavior. A day later the students were offered a choice of snacks and drinks in a seemingly unrelated context. The teens chose healthy snacks and drinks, such as fruit or water, more often over unhealthy options, like biscuits and soda. Apparently associating a healthy diet with teenagers' own values seems to be a promising avenue to prevent obesity.",
+    "contextTranslation": "垃圾食品如今已成为许多美国人饮食中的常见组成部分。零食公司的广告宣传常常请体育明星代言，传递出这样一种信息：只要多进行体育锻炼，就能抵消食用其产品带来的任何负面影响。但最新研究表明，肥胖率上升并不是因为缺乏运动，而是因为不良饮食。\n\n帮助减少垃圾食品摄入的干预措施对儿童和青少年尤其重要。肥胖很难治疗，因此预防胜于治疗。遗憾的是，健康教育虽然在低龄儿童中取得了一定成效，但对青少年的影响较弱。\n\n如今，一项大规模研究尝试用创新方法改变青少年对健康饮食的态度，结果令人期待。研究人员认为，以往干预措施之所以大多失败，是因为存在一个重大缺陷：它们关注的是未来更健康的自己，并假定这一点足以成为青少年的动力。相比之下，新的干预措施巧妙地利用了青少年叛逆、追求自主的天性，以及他们对社会公平的重视。\n\n为此，研究人员让学生阅读一篇关于食品行业的文章。文章揭露了食品行业为使垃圾食品更容易让人上瘾、并把产品包装成健康食品而采用的操纵性和欺骗性策略。文章还解释了广告宣传如何专门针对年幼和贫困人群，从而伤害这些弱势群体。随后，参与者阅读了一份虚构的青少年调查，调查中青少年表示希望“通过少购买、少食用加工食品来反击这些公司”。\n\n干预后，参与者把健康饮食与自主意识和社会公平联系起来。青少年也认为健康饮食更有吸引力。更重要的是，这种新干预措施对实际行为也产生了一些积极影响。一天后，学生们在一个看似无关的场景中被提供零食和饮料选择。与饼干、汽水等不健康选项相比，青少年更常选择水果、水等健康零食和饮品。显然，把健康饮食与青少年自身价值观联系起来，似乎是预防肥胖的一条有希望的途径。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_2_passage_two_q51",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第2套 Passage Two",
+    "questionNo": 51,
+    "stem": "What do scientists think of REM?",
+    "stemTranslation": "科学家如何看待快速眼动睡眠？",
+    "options": [
+      "A) It is a sign of dreaming in adults and infants alike.",
+      "B) It is essential to human beings' language learning.",
+      "C) It determines the formation of connections in the brain.",
+      "D) It performs a different function in babies than in adults."
+    ],
+    "answer": "D",
+    "answerTranslation": "它在婴儿身上发挥的作用与在成年人身上不同。",
+    "contextRaw": "Adults dream during REM sleep and infants have loads of REM. So, it might be fair to assume that babies have tons of dreams.\n\nBut scientists believe REM serves a completely different purpose for newborns and infants than dreaming. When babies are in REM, it allows their brain to develop pathways, connections, and eventually, learn languages.\n\nSince your baby doesn't dream at this stage of brain development, it's safe to assume babies do not have nightmares, either. Nightmares stem from exposure to trauma, an overactive imagination, and the normal stresses of everyday life.\n\nAre you wondering, what do babies dream about? Good question, but the answer is nothing!\n\nSo, when do babies start dreaming? The general consensus is that they start dreaming around the age of two. Psychologist David Foulkes studies children, from very small kids to teens, to bring the secrets of their dreams to the light of day. In his lab, he lets kids fall asleep and then wakes them 3 times a night and asks them to describe what they recall.\n\nFoulkes' findings are unsurprising. Basically, little kids have little dreams. But exactly what kids see while dreaming depends on their age. As children develop and grow, their dreams do too.\n\nDreams of very small kids are usually just snapshots, looking much more like a slideshow than a movie, when compared to the dreams of adults. They heavily feature animals and other familiar sights, like images of people eating. According to Foulkes, \"Children's dream life seems to be similar to their waking imagination and narration.\" Kids ages 5 to 9 begin seeing moving images and characters in action. Dreams now include multiple events strung together, one after the other. They also start developing greater ability to remember dreams. Still, that's not always the case: When roused during REM sleep, 25% of the kids in Foulkes' studies had no recollection of dreaming, a trend that continues through age 9.\n\nSo, if your baby seems to be in a stressful state while sleeping or is upset upon waking, there may be other factors at play.",
+    "contextTranslation": "成年人会在快速眼动睡眠期间做梦，而婴儿有大量快速眼动睡眠。因此，人们也许会合理地推测，婴儿会做很多梦。\n\n但科学家认为，对新生儿和婴儿而言，快速眼动睡眠发挥的作用与做梦完全不同。婴儿处于快速眼动睡眠状态时，大脑会借此形成神经通路和连接，并最终学习语言。\n\n既然婴儿在这一大脑发育阶段并不会做梦，那么也可以认为婴儿不会做噩梦。噩梦源于创伤经历、过度活跃的想象力以及日常生活中的正常压力。\n\n你是否好奇婴儿会梦见什么？这是个好问题，但答案是：什么也没有。\n\n那么，婴儿什么时候开始做梦呢？普遍共识是，他们大约在两岁左右开始做梦。心理学家大卫·福克斯研究从幼儿到青少年的儿童，以揭示他们梦境中的秘密。在实验室里，他让孩子们入睡，然后每晚叫醒他们三次，让他们描述自己记得的内容。\n\n福克斯的发现并不令人意外。基本上，年幼孩子的梦也很简单。但孩子在梦中究竟看见什么取决于他们的年龄。随着儿童成长发育，他们的梦境也会随之发展。\n\n与成年人相比，非常年幼孩子的梦通常只是一些“快照”式片段，更像幻灯片而不是电影。梦中常出现动物和其他熟悉场景，例如人们吃饭的画面。福克斯认为，儿童的梦境生活似乎与他们清醒时的想象和叙述相似。5到9岁的孩子开始在梦中看到运动画面和行动中的人物。梦境开始包含多个连续发生的事件。他们记住梦境的能力也开始增强。不过情况并非总是如此：在福克斯的研究中，当孩子在快速眼动睡眠期间被叫醒时，有25%的孩子完全不记得自己做过梦，这种趋势会持续到9岁。\n\n因此，如果你的宝宝睡觉时看起来很紧张，或醒来后情绪烦躁，可能是其他因素在起作用。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_2_passage_two_q52",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第2套 Passage Two",
+    "questionNo": 52,
+    "stem": "What can we infer about nightmares from the passage?",
+    "stemTranslation": "关于噩梦，我们可以从文章中推断出什么？",
+    "options": [
+      "A) They occur often in people with an active imagination.",
+      "B) They occur in people suffering from emotional stress.",
+      "C) They vary in different stages of brain development.",
+      "D) They appear in the sleep of both adults and infants."
+    ],
+    "answer": "B",
+    "answerTranslation": "它们会出现在承受情绪压力的人身上。",
+    "contextRaw": "Adults dream during REM sleep and infants have loads of REM. So, it might be fair to assume that babies have tons of dreams.\n\nBut scientists believe REM serves a completely different purpose for newborns and infants than dreaming. When babies are in REM, it allows their brain to develop pathways, connections, and eventually, learn languages.\n\nSince your baby doesn't dream at this stage of brain development, it's safe to assume babies do not have nightmares, either. Nightmares stem from exposure to trauma, an overactive imagination, and the normal stresses of everyday life.\n\nAre you wondering, what do babies dream about? Good question, but the answer is nothing!\n\nSo, when do babies start dreaming? The general consensus is that they start dreaming around the age of two. Psychologist David Foulkes studies children, from very small kids to teens, to bring the secrets of their dreams to the light of day. In his lab, he lets kids fall asleep and then wakes them 3 times a night and asks them to describe what they recall.\n\nFoulkes' findings are unsurprising. Basically, little kids have little dreams. But exactly what kids see while dreaming depends on their age. As children develop and grow, their dreams do too.\n\nDreams of very small kids are usually just snapshots, looking much more like a slideshow than a movie, when compared to the dreams of adults. They heavily feature animals and other familiar sights, like images of people eating. According to Foulkes, \"Children's dream life seems to be similar to their waking imagination and narration.\" Kids ages 5 to 9 begin seeing moving images and characters in action. Dreams now include multiple events strung together, one after the other. They also start developing greater ability to remember dreams. Still, that's not always the case: When roused during REM sleep, 25% of the kids in Foulkes' studies had no recollection of dreaming, a trend that continues through age 9.\n\nSo, if your baby seems to be in a stressful state while sleeping or is upset upon waking, there may be other factors at play.",
+    "contextTranslation": "成年人会在快速眼动睡眠期间做梦，而婴儿有大量快速眼动睡眠。因此，人们也许会合理地推测，婴儿会做很多梦。\n\n但科学家认为，对新生儿和婴儿而言，快速眼动睡眠发挥的作用与做梦完全不同。婴儿处于快速眼动睡眠状态时，大脑会借此形成神经通路和连接，并最终学习语言。\n\n既然婴儿在这一大脑发育阶段并不会做梦，那么也可以认为婴儿不会做噩梦。噩梦源于创伤经历、过度活跃的想象力以及日常生活中的正常压力。\n\n你是否好奇婴儿会梦见什么？这是个好问题，但答案是：什么也没有。\n\n那么，婴儿什么时候开始做梦呢？普遍共识是，他们大约在两岁左右开始做梦。心理学家大卫·福克斯研究从幼儿到青少年的儿童，以揭示他们梦境中的秘密。在实验室里，他让孩子们入睡，然后每晚叫醒他们三次，让他们描述自己记得的内容。\n\n福克斯的发现并不令人意外。基本上，年幼孩子的梦也很简单。但孩子在梦中究竟看见什么取决于他们的年龄。随着儿童成长发育，他们的梦境也会随之发展。\n\n与成年人相比，非常年幼孩子的梦通常只是一些“快照”式片段，更像幻灯片而不是电影。梦中常出现动物和其他熟悉场景，例如人们吃饭的画面。福克斯认为，儿童的梦境生活似乎与他们清醒时的想象和叙述相似。5到9岁的孩子开始在梦中看到运动画面和行动中的人物。梦境开始包含多个连续发生的事件。他们记住梦境的能力也开始增强。不过情况并非总是如此：在福克斯的研究中，当孩子在快速眼动睡眠期间被叫醒时，有25%的孩子完全不记得自己做过梦，这种趋势会持续到9岁。\n\n因此，如果你的宝宝睡觉时看起来很紧张，或醒来后情绪烦躁，可能是其他因素在起作用。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_2_passage_two_q53",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第2套 Passage Two",
+    "questionNo": 53,
+    "stem": "What is the aim of psychologist David Foulkes' study?",
+    "stemTranslation": "心理学家大卫·福克斯研究的目的是什么？",
+    "options": [
+      "A) To reveal the secrets of children's dreams.",
+      "B) To see if children start dreaming at age two.",
+      "C) To solve the mystery of dreaming and brain growth.",
+      "D) To confirm the general consensus on when kids dream."
+    ],
+    "answer": "A",
+    "answerTranslation": "揭示儿童梦境的秘密。",
+    "contextRaw": "Adults dream during REM sleep and infants have loads of REM. So, it might be fair to assume that babies have tons of dreams.\n\nBut scientists believe REM serves a completely different purpose for newborns and infants than dreaming. When babies are in REM, it allows their brain to develop pathways, connections, and eventually, learn languages.\n\nSince your baby doesn't dream at this stage of brain development, it's safe to assume babies do not have nightmares, either. Nightmares stem from exposure to trauma, an overactive imagination, and the normal stresses of everyday life.\n\nAre you wondering, what do babies dream about? Good question, but the answer is nothing!\n\nSo, when do babies start dreaming? The general consensus is that they start dreaming around the age of two. Psychologist David Foulkes studies children, from very small kids to teens, to bring the secrets of their dreams to the light of day. In his lab, he lets kids fall asleep and then wakes them 3 times a night and asks them to describe what they recall.\n\nFoulkes' findings are unsurprising. Basically, little kids have little dreams. But exactly what kids see while dreaming depends on their age. As children develop and grow, their dreams do too.\n\nDreams of very small kids are usually just snapshots, looking much more like a slideshow than a movie, when compared to the dreams of adults. They heavily feature animals and other familiar sights, like images of people eating. According to Foulkes, \"Children's dream life seems to be similar to their waking imagination and narration.\" Kids ages 5 to 9 begin seeing moving images and characters in action. Dreams now include multiple events strung together, one after the other. They also start developing greater ability to remember dreams. Still, that's not always the case: When roused during REM sleep, 25% of the kids in Foulkes' studies had no recollection of dreaming, a trend that continues through age 9.\n\nSo, if your baby seems to be in a stressful state while sleeping or is upset upon waking, there may be other factors at play.",
+    "contextTranslation": "成年人会在快速眼动睡眠期间做梦，而婴儿有大量快速眼动睡眠。因此，人们也许会合理地推测，婴儿会做很多梦。\n\n但科学家认为，对新生儿和婴儿而言，快速眼动睡眠发挥的作用与做梦完全不同。婴儿处于快速眼动睡眠状态时，大脑会借此形成神经通路和连接，并最终学习语言。\n\n既然婴儿在这一大脑发育阶段并不会做梦，那么也可以认为婴儿不会做噩梦。噩梦源于创伤经历、过度活跃的想象力以及日常生活中的正常压力。\n\n你是否好奇婴儿会梦见什么？这是个好问题，但答案是：什么也没有。\n\n那么，婴儿什么时候开始做梦呢？普遍共识是，他们大约在两岁左右开始做梦。心理学家大卫·福克斯研究从幼儿到青少年的儿童，以揭示他们梦境中的秘密。在实验室里，他让孩子们入睡，然后每晚叫醒他们三次，让他们描述自己记得的内容。\n\n福克斯的发现并不令人意外。基本上，年幼孩子的梦也很简单。但孩子在梦中究竟看见什么取决于他们的年龄。随着儿童成长发育，他们的梦境也会随之发展。\n\n与成年人相比，非常年幼孩子的梦通常只是一些“快照”式片段，更像幻灯片而不是电影。梦中常出现动物和其他熟悉场景，例如人们吃饭的画面。福克斯认为，儿童的梦境生活似乎与他们清醒时的想象和叙述相似。5到9岁的孩子开始在梦中看到运动画面和行动中的人物。梦境开始包含多个连续发生的事件。他们记住梦境的能力也开始增强。不过情况并非总是如此：在福克斯的研究中，当孩子在快速眼动睡眠期间被叫醒时，有25%的孩子完全不记得自己做过梦，这种趋势会持续到9岁。\n\n因此，如果你的宝宝睡觉时看起来很紧张，或醒来后情绪烦躁，可能是其他因素在起作用。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_2_passage_two_q54",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第2套 Passage Two",
+    "questionNo": 54,
+    "stem": "What are Foulkes' findings about kids' dreams?",
+    "stemTranslation": "福克斯关于儿童梦境的发现是什么？",
+    "options": [
+      "A) They feature strange animals.",
+      "B) They are unsurprising to adults.",
+      "C) They grow and evolve with age.",
+      "D) They reflect kids' waking life."
+    ],
+    "answer": "C",
+    "answerTranslation": "儿童的梦境会随着年龄增长而发展变化。",
+    "contextRaw": "Adults dream during REM sleep and infants have loads of REM. So, it might be fair to assume that babies have tons of dreams.\n\nBut scientists believe REM serves a completely different purpose for newborns and infants than dreaming. When babies are in REM, it allows their brain to develop pathways, connections, and eventually, learn languages.\n\nSince your baby doesn't dream at this stage of brain development, it's safe to assume babies do not have nightmares, either. Nightmares stem from exposure to trauma, an overactive imagination, and the normal stresses of everyday life.\n\nAre you wondering, what do babies dream about? Good question, but the answer is nothing!\n\nSo, when do babies start dreaming? The general consensus is that they start dreaming around the age of two. Psychologist David Foulkes studies children, from very small kids to teens, to bring the secrets of their dreams to the light of day. In his lab, he lets kids fall asleep and then wakes them 3 times a night and asks them to describe what they recall.\n\nFoulkes' findings are unsurprising. Basically, little kids have little dreams. But exactly what kids see while dreaming depends on their age. As children develop and grow, their dreams do too.\n\nDreams of very small kids are usually just snapshots, looking much more like a slideshow than a movie, when compared to the dreams of adults. They heavily feature animals and other familiar sights, like images of people eating. According to Foulkes, \"Children's dream life seems to be similar to their waking imagination and narration.\" Kids ages 5 to 9 begin seeing moving images and characters in action. Dreams now include multiple events strung together, one after the other. They also start developing greater ability to remember dreams. Still, that's not always the case: When roused during REM sleep, 25% of the kids in Foulkes' studies had no recollection of dreaming, a trend that continues through age 9.\n\nSo, if your baby seems to be in a stressful state while sleeping or is upset upon waking, there may be other factors at play.",
+    "contextTranslation": "成年人会在快速眼动睡眠期间做梦，而婴儿有大量快速眼动睡眠。因此，人们也许会合理地推测，婴儿会做很多梦。\n\n但科学家认为，对新生儿和婴儿而言，快速眼动睡眠发挥的作用与做梦完全不同。婴儿处于快速眼动睡眠状态时，大脑会借此形成神经通路和连接，并最终学习语言。\n\n既然婴儿在这一大脑发育阶段并不会做梦，那么也可以认为婴儿不会做噩梦。噩梦源于创伤经历、过度活跃的想象力以及日常生活中的正常压力。\n\n你是否好奇婴儿会梦见什么？这是个好问题，但答案是：什么也没有。\n\n那么，婴儿什么时候开始做梦呢？普遍共识是，他们大约在两岁左右开始做梦。心理学家大卫·福克斯研究从幼儿到青少年的儿童，以揭示他们梦境中的秘密。在实验室里，他让孩子们入睡，然后每晚叫醒他们三次，让他们描述自己记得的内容。\n\n福克斯的发现并不令人意外。基本上，年幼孩子的梦也很简单。但孩子在梦中究竟看见什么取决于他们的年龄。随着儿童成长发育，他们的梦境也会随之发展。\n\n与成年人相比，非常年幼孩子的梦通常只是一些“快照”式片段，更像幻灯片而不是电影。梦中常出现动物和其他熟悉场景，例如人们吃饭的画面。福克斯认为，儿童的梦境生活似乎与他们清醒时的想象和叙述相似。5到9岁的孩子开始在梦中看到运动画面和行动中的人物。梦境开始包含多个连续发生的事件。他们记住梦境的能力也开始增强。不过情况并非总是如此：在福克斯的研究中，当孩子在快速眼动睡眠期间被叫醒时，有25%的孩子完全不记得自己做过梦，这种趋势会持续到9岁。\n\n因此，如果你的宝宝睡觉时看起来很紧张，或醒来后情绪烦躁，可能是其他因素在起作用。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_2_passage_two_q55",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第2套 Passage Two",
+    "questionNo": 55,
+    "stem": "What can we assume about babies who appear upset upon waking?",
+    "stemTranslation": "对于醒来后显得烦躁不安的婴儿，我们可以作出什么判断？",
+    "options": [
+      "A) They have been roused against their will.",
+      "B) They have been disturbed by a nightmare.",
+      "C) They have trouble recollecting the images of their dreams.",
+      "D) They have been affected by something other than dreaming."
+    ],
+    "answer": "D",
+    "answerTranslation": "他们受到了做梦以外其他因素的影响。",
+    "contextRaw": "Adults dream during REM sleep and infants have loads of REM. So, it might be fair to assume that babies have tons of dreams.\n\nBut scientists believe REM serves a completely different purpose for newborns and infants than dreaming. When babies are in REM, it allows their brain to develop pathways, connections, and eventually, learn languages.\n\nSince your baby doesn't dream at this stage of brain development, it's safe to assume babies do not have nightmares, either. Nightmares stem from exposure to trauma, an overactive imagination, and the normal stresses of everyday life.\n\nAre you wondering, what do babies dream about? Good question, but the answer is nothing!\n\nSo, when do babies start dreaming? The general consensus is that they start dreaming around the age of two. Psychologist David Foulkes studies children, from very small kids to teens, to bring the secrets of their dreams to the light of day. In his lab, he lets kids fall asleep and then wakes them 3 times a night and asks them to describe what they recall.\n\nFoulkes' findings are unsurprising. Basically, little kids have little dreams. But exactly what kids see while dreaming depends on their age. As children develop and grow, their dreams do too.\n\nDreams of very small kids are usually just snapshots, looking much more like a slideshow than a movie, when compared to the dreams of adults. They heavily feature animals and other familiar sights, like images of people eating. According to Foulkes, \"Children's dream life seems to be similar to their waking imagination and narration.\" Kids ages 5 to 9 begin seeing moving images and characters in action. Dreams now include multiple events strung together, one after the other. They also start developing greater ability to remember dreams. Still, that's not always the case: When roused during REM sleep, 25% of the kids in Foulkes' studies had no recollection of dreaming, a trend that continues through age 9.\n\nSo, if your baby seems to be in a stressful state while sleeping or is upset upon waking, there may be other factors at play.",
+    "contextTranslation": "成年人会在快速眼动睡眠期间做梦，而婴儿有大量快速眼动睡眠。因此，人们也许会合理地推测，婴儿会做很多梦。\n\n但科学家认为，对新生儿和婴儿而言，快速眼动睡眠发挥的作用与做梦完全不同。婴儿处于快速眼动睡眠状态时，大脑会借此形成神经通路和连接，并最终学习语言。\n\n既然婴儿在这一大脑发育阶段并不会做梦，那么也可以认为婴儿不会做噩梦。噩梦源于创伤经历、过度活跃的想象力以及日常生活中的正常压力。\n\n你是否好奇婴儿会梦见什么？这是个好问题，但答案是：什么也没有。\n\n那么，婴儿什么时候开始做梦呢？普遍共识是，他们大约在两岁左右开始做梦。心理学家大卫·福克斯研究从幼儿到青少年的儿童，以揭示他们梦境中的秘密。在实验室里，他让孩子们入睡，然后每晚叫醒他们三次，让他们描述自己记得的内容。\n\n福克斯的发现并不令人意外。基本上，年幼孩子的梦也很简单。但孩子在梦中究竟看见什么取决于他们的年龄。随着儿童成长发育，他们的梦境也会随之发展。\n\n与成年人相比，非常年幼孩子的梦通常只是一些“快照”式片段，更像幻灯片而不是电影。梦中常出现动物和其他熟悉场景，例如人们吃饭的画面。福克斯认为，儿童的梦境生活似乎与他们清醒时的想象和叙述相似。5到9岁的孩子开始在梦中看到运动画面和行动中的人物。梦境开始包含多个连续发生的事件。他们记住梦境的能力也开始增强。不过情况并非总是如此：在福克斯的研究中，当孩子在快速眼动睡眠期间被叫醒时，有25%的孩子完全不记得自己做过梦，这种趋势会持续到9岁。\n\n因此，如果你的宝宝睡觉时看起来很紧张，或醒来后情绪烦躁，可能是其他因素在起作用。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_3_passage_one_q46",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第3套 Passage One",
+    "questionNo": 46,
+    "stem": "What do we learn about New York's Eleven Madison Park?",
+    "stemTranslation": "关于纽约麦迪逊公园11号餐厅，我们了解到什么？",
+    "options": [
+      "A) It is the first vegan restaurant to receive the highest Michelin rating.",
+      "B) It is the first restaurant in the city to remove meat from its menu.",
+      "C) It was famed throughout the U.S. for its fancy regional dishes.",
+      "D) It was established as a three-star Michelin restaurant in 2011."
+    ],
+    "answer": "A",
+    "answerTranslation": "它是首家获得米其林最高评级的素食餐厅。",
+    "contextRaw": "New York's Eleven Madison Park has become the first vegan restaurant to be awarded three Michelin stars.\n\nThe fine dining establishment received its first three-star Michelin rating in 2011 when the menu was famed for its fancy animal-based dishes.\n\nHowever, last year, the restaurant's co-owner and famous chef, Daniel Humm, made the bold decision to remove meat from the menu, citing our unsustainable food system. While cow milk is still served for tea and coffee, the menu is almost 100 percent vegan.\n\nAt the time, Humm acknowledged the move was risky, admitting that \"it wasn't clear if guests would come\" but called the gamble \"a risk worth taking.\"\n\n\"In view of the climate crisis, I didn't want to open the same restaurant,\" Humm told the Financial Times in an interview. \"If we can show the possibilities of eating plant-based food in this setting, it can open a lot of doors\" for others to follow.\n\nNow, this impressive new accomplishment validates Eleven Madison Park's decision to take meat off the menu and embrace plant-based foods, with Michelin's 2022 New York guide branding it a \"bold vision of luxury dining.\"\n\n\"We took the jump to transform Eleven Madison Park into a plant-based fine dining restaurant knowing in our hearts this is what we believed in,\" stated Humm on Instagram. \"Last night, we were honored to be awarded three Michelin stars for the 11th year in a row. I am so grateful to the team members who contributed through its nearly 25-year history. We are also grateful to our guests and partners who believed in our vision and encouraged us to push harder.\"\n\nThree Michelin stars is the highest award, given to chefs who are at the peak of their profession. \"Their cooking is elevated to an art form and some of their dishes are destined to become classics,\" reads Michelin's website, in a clear nod to plant-based food's growing significance in the culinary world.\n\n\"I think luxury companies have a real role to play and a responsibility,\" says Humm. \"The more creative we are, the more beautiful and delicious our future will be.\"",
+    "contextTranslation": "纽约麦迪逊公园11号餐厅成为首家获得米其林三星评级的素食餐厅。\n\n这家高级餐厅在2011年首次获得米其林三星评级，当时其菜单以精致的动物源菜品而闻名。\n\n然而，去年，该餐厅联合创始人、著名厨师丹尼尔·胡姆做出了大胆决定：将肉类从菜单中移除，理由是当前食物体系不可持续。虽然茶和咖啡仍提供牛奶，但菜单几乎百分之百为素食。\n\n当时，胡姆承认这一举措有风险，并坦言“不确定客人是否还会光顾”，但他称这次冒险“值得一试”。\n\n胡姆在接受《金融时报》采访时说：“鉴于气候危机，我不想重新开一家和过去一样的餐厅。如果我们能在这样的场景中展示植物基饮食的可能性，就能为其他人打开许多扇门。”\n\n如今，这一令人瞩目的新成就证明麦迪逊公园11号餐厅取消肉类菜品、拥抱植物基食物的决定是正确的。米其林2022年纽约指南将其称为“豪华餐饮的大胆愿景”。\n\n胡姆在社交媒体上表示：“我们毅然决定把麦迪逊公园11号转型为植物基高级餐厅，因为我们内心相信这就是我们认同的理念。昨晚，我们很荣幸连续第11年获得米其林三星。我非常感谢近25年来为餐厅发展做出贡献的团队成员，也感谢相信我们愿景、鼓励我们继续前进的客人和合作伙伴。”\n\n米其林三星是最高奖项，授予那些处于行业巅峰的厨师。米其林网站写道：“他们的烹饪被提升为一种艺术形式，其中一些菜品注定会成为经典。”这显然是在认可植物基食物在烹饪界日益增长的重要性。\n\n胡姆说：“我认为奢华品牌确实可以发挥作用，也负有责任。我们越有创造力，我们的未来就会越美好、越美味。”",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_3_passage_one_q47",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第3套 Passage One",
+    "questionNo": 47,
+    "stem": "Why did Daniel Humm decide to remove meat from the menu of his restaurant?",
+    "stemTranslation": "丹尼尔·胡姆为什么决定从餐厅菜单中移除肉类？",
+    "options": [
+      "A) To encourage more customers to be vegan.",
+      "B) To contribute to a sustainable food system.",
+      "C) To show the appeal of a plant-based menu.",
+      "D) To strive for the three-star Michelin rating."
+    ],
+    "answer": "B",
+    "answerTranslation": "为了为可持续食物体系做出贡献。",
+    "contextRaw": "New York's Eleven Madison Park has become the first vegan restaurant to be awarded three Michelin stars.\n\nThe fine dining establishment received its first three-star Michelin rating in 2011 when the menu was famed for its fancy animal-based dishes.\n\nHowever, last year, the restaurant's co-owner and famous chef, Daniel Humm, made the bold decision to remove meat from the menu, citing our unsustainable food system. While cow milk is still served for tea and coffee, the menu is almost 100 percent vegan.\n\nAt the time, Humm acknowledged the move was risky, admitting that \"it wasn't clear if guests would come\" but called the gamble \"a risk worth taking.\"\n\n\"In view of the climate crisis, I didn't want to open the same restaurant,\" Humm told the Financial Times in an interview. \"If we can show the possibilities of eating plant-based food in this setting, it can open a lot of doors\" for others to follow.\n\nNow, this impressive new accomplishment validates Eleven Madison Park's decision to take meat off the menu and embrace plant-based foods, with Michelin's 2022 New York guide branding it a \"bold vision of luxury dining.\"\n\n\"We took the jump to transform Eleven Madison Park into a plant-based fine dining restaurant knowing in our hearts this is what we believed in,\" stated Humm on Instagram. \"Last night, we were honored to be awarded three Michelin stars for the 11th year in a row. I am so grateful to the team members who contributed through its nearly 25-year history. We are also grateful to our guests and partners who believed in our vision and encouraged us to push harder.\"\n\nThree Michelin stars is the highest award, given to chefs who are at the peak of their profession. \"Their cooking is elevated to an art form and some of their dishes are destined to become classics,\" reads Michelin's website, in a clear nod to plant-based food's growing significance in the culinary world.\n\n\"I think luxury companies have a real role to play and a responsibility,\" says Humm. \"The more creative we are, the more beautiful and delicious our future will be.\"",
+    "contextTranslation": "纽约麦迪逊公园11号餐厅成为首家获得米其林三星评级的素食餐厅。\n\n这家高级餐厅在2011年首次获得米其林三星评级，当时其菜单以精致的动物源菜品而闻名。\n\n然而，去年，该餐厅联合创始人、著名厨师丹尼尔·胡姆做出了大胆决定：将肉类从菜单中移除，理由是当前食物体系不可持续。虽然茶和咖啡仍提供牛奶，但菜单几乎百分之百为素食。\n\n当时，胡姆承认这一举措有风险，并坦言“不确定客人是否还会光顾”，但他称这次冒险“值得一试”。\n\n胡姆在接受《金融时报》采访时说：“鉴于气候危机，我不想重新开一家和过去一样的餐厅。如果我们能在这样的场景中展示植物基饮食的可能性，就能为其他人打开许多扇门。”\n\n如今，这一令人瞩目的新成就证明麦迪逊公园11号餐厅取消肉类菜品、拥抱植物基食物的决定是正确的。米其林2022年纽约指南将其称为“豪华餐饮的大胆愿景”。\n\n胡姆在社交媒体上表示：“我们毅然决定把麦迪逊公园11号转型为植物基高级餐厅，因为我们内心相信这就是我们认同的理念。昨晚，我们很荣幸连续第11年获得米其林三星。我非常感谢近25年来为餐厅发展做出贡献的团队成员，也感谢相信我们愿景、鼓励我们继续前进的客人和合作伙伴。”\n\n米其林三星是最高奖项，授予那些处于行业巅峰的厨师。米其林网站写道：“他们的烹饪被提升为一种艺术形式，其中一些菜品注定会成为经典。”这显然是在认可植物基食物在烹饪界日益增长的重要性。\n\n胡姆说：“我认为奢华品牌确实可以发挥作用，也负有责任。我们越有创造力，我们的未来就会越美好、越美味。”",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_3_passage_one_q48",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第3套 Passage One",
+    "questionNo": 48,
+    "stem": "What did Daniel Humm think of his move to a meat-free menu?",
+    "stemTranslation": "丹尼尔·胡姆如何看待转向无肉菜单的举措？",
+    "options": [
+      "A) It was a worthwhile effort even though he was unsure of its success.",
+      "B) It would set a model for many more restaurants to follow.",
+      "C) It was a mad gamble few chefs in the fine dining world would risk taking.",
+      "D) It would prove a right step to take in today's catering business."
+    ],
+    "answer": "A",
+    "answerTranslation": "尽管他不确定能否成功，但他认为这是一项值得尝试的努力。",
+    "contextRaw": "New York's Eleven Madison Park has become the first vegan restaurant to be awarded three Michelin stars.\n\nThe fine dining establishment received its first three-star Michelin rating in 2011 when the menu was famed for its fancy animal-based dishes.\n\nHowever, last year, the restaurant's co-owner and famous chef, Daniel Humm, made the bold decision to remove meat from the menu, citing our unsustainable food system. While cow milk is still served for tea and coffee, the menu is almost 100 percent vegan.\n\nAt the time, Humm acknowledged the move was risky, admitting that \"it wasn't clear if guests would come\" but called the gamble \"a risk worth taking.\"\n\n\"In view of the climate crisis, I didn't want to open the same restaurant,\" Humm told the Financial Times in an interview. \"If we can show the possibilities of eating plant-based food in this setting, it can open a lot of doors\" for others to follow.\n\nNow, this impressive new accomplishment validates Eleven Madison Park's decision to take meat off the menu and embrace plant-based foods, with Michelin's 2022 New York guide branding it a \"bold vision of luxury dining.\"\n\n\"We took the jump to transform Eleven Madison Park into a plant-based fine dining restaurant knowing in our hearts this is what we believed in,\" stated Humm on Instagram. \"Last night, we were honored to be awarded three Michelin stars for the 11th year in a row. I am so grateful to the team members who contributed through its nearly 25-year history. We are also grateful to our guests and partners who believed in our vision and encouraged us to push harder.\"\n\nThree Michelin stars is the highest award, given to chefs who are at the peak of their profession. \"Their cooking is elevated to an art form and some of their dishes are destined to become classics,\" reads Michelin's website, in a clear nod to plant-based food's growing significance in the culinary world.\n\n\"I think luxury companies have a real role to play and a responsibility,\" says Humm. \"The more creative we are, the more beautiful and delicious our future will be.\"",
+    "contextTranslation": "纽约麦迪逊公园11号餐厅成为首家获得米其林三星评级的素食餐厅。\n\n这家高级餐厅在2011年首次获得米其林三星评级，当时其菜单以精致的动物源菜品而闻名。\n\n然而，去年，该餐厅联合创始人、著名厨师丹尼尔·胡姆做出了大胆决定：将肉类从菜单中移除，理由是当前食物体系不可持续。虽然茶和咖啡仍提供牛奶，但菜单几乎百分之百为素食。\n\n当时，胡姆承认这一举措有风险，并坦言“不确定客人是否还会光顾”，但他称这次冒险“值得一试”。\n\n胡姆在接受《金融时报》采访时说：“鉴于气候危机，我不想重新开一家和过去一样的餐厅。如果我们能在这样的场景中展示植物基饮食的可能性，就能为其他人打开许多扇门。”\n\n如今，这一令人瞩目的新成就证明麦迪逊公园11号餐厅取消肉类菜品、拥抱植物基食物的决定是正确的。米其林2022年纽约指南将其称为“豪华餐饮的大胆愿景”。\n\n胡姆在社交媒体上表示：“我们毅然决定把麦迪逊公园11号转型为植物基高级餐厅，因为我们内心相信这就是我们认同的理念。昨晚，我们很荣幸连续第11年获得米其林三星。我非常感谢近25年来为餐厅发展做出贡献的团队成员，也感谢相信我们愿景、鼓励我们继续前进的客人和合作伙伴。”\n\n米其林三星是最高奖项，授予那些处于行业巅峰的厨师。米其林网站写道：“他们的烹饪被提升为一种艺术形式，其中一些菜品注定会成为经典。”这显然是在认可植物基食物在烹饪界日益增长的重要性。\n\n胡姆说：“我认为奢华品牌确实可以发挥作用，也负有责任。我们越有创造力，我们的未来就会越美好、越美味。”",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_3_passage_one_q49",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第3套 Passage One",
+    "questionNo": 49,
+    "stem": "What does Michelin's 2022 New York guide say about Eleven Madison Park's decision?",
+    "stemTranslation": "米其林2022年纽约指南如何评价麦迪逊公园11号餐厅的决定？",
+    "options": [
+      "A) It elevates the restaurant's cooking to an art form.",
+      "B) It proves the validity of ratings awarded by Michelin.",
+      "C) It shows a daring foresight regarding future fine dining.",
+      "D) It is an effort to transform the restaurant into a luxury one."
+    ],
+    "answer": "C",
+    "answerTranslation": "它展现了对未来高级餐饮的大胆远见。",
+    "contextRaw": "New York's Eleven Madison Park has become the first vegan restaurant to be awarded three Michelin stars.\n\nThe fine dining establishment received its first three-star Michelin rating in 2011 when the menu was famed for its fancy animal-based dishes.\n\nHowever, last year, the restaurant's co-owner and famous chef, Daniel Humm, made the bold decision to remove meat from the menu, citing our unsustainable food system. While cow milk is still served for tea and coffee, the menu is almost 100 percent vegan.\n\nAt the time, Humm acknowledged the move was risky, admitting that \"it wasn't clear if guests would come\" but called the gamble \"a risk worth taking.\"\n\n\"In view of the climate crisis, I didn't want to open the same restaurant,\" Humm told the Financial Times in an interview. \"If we can show the possibilities of eating plant-based food in this setting, it can open a lot of doors\" for others to follow.\n\nNow, this impressive new accomplishment validates Eleven Madison Park's decision to take meat off the menu and embrace plant-based foods, with Michelin's 2022 New York guide branding it a \"bold vision of luxury dining.\"\n\n\"We took the jump to transform Eleven Madison Park into a plant-based fine dining restaurant knowing in our hearts this is what we believed in,\" stated Humm on Instagram. \"Last night, we were honored to be awarded three Michelin stars for the 11th year in a row. I am so grateful to the team members who contributed through its nearly 25-year history. We are also grateful to our guests and partners who believed in our vision and encouraged us to push harder.\"\n\nThree Michelin stars is the highest award, given to chefs who are at the peak of their profession. \"Their cooking is elevated to an art form and some of their dishes are destined to become classics,\" reads Michelin's website, in a clear nod to plant-based food's growing significance in the culinary world.\n\n\"I think luxury companies have a real role to play and a responsibility,\" says Humm. \"The more creative we are, the more beautiful and delicious our future will be.\"",
+    "contextTranslation": "纽约麦迪逊公园11号餐厅成为首家获得米其林三星评级的素食餐厅。\n\n这家高级餐厅在2011年首次获得米其林三星评级，当时其菜单以精致的动物源菜品而闻名。\n\n然而，去年，该餐厅联合创始人、著名厨师丹尼尔·胡姆做出了大胆决定：将肉类从菜单中移除，理由是当前食物体系不可持续。虽然茶和咖啡仍提供牛奶，但菜单几乎百分之百为素食。\n\n当时，胡姆承认这一举措有风险，并坦言“不确定客人是否还会光顾”，但他称这次冒险“值得一试”。\n\n胡姆在接受《金融时报》采访时说：“鉴于气候危机，我不想重新开一家和过去一样的餐厅。如果我们能在这样的场景中展示植物基饮食的可能性，就能为其他人打开许多扇门。”\n\n如今，这一令人瞩目的新成就证明麦迪逊公园11号餐厅取消肉类菜品、拥抱植物基食物的决定是正确的。米其林2022年纽约指南将其称为“豪华餐饮的大胆愿景”。\n\n胡姆在社交媒体上表示：“我们毅然决定把麦迪逊公园11号转型为植物基高级餐厅，因为我们内心相信这就是我们认同的理念。昨晚，我们很荣幸连续第11年获得米其林三星。我非常感谢近25年来为餐厅发展做出贡献的团队成员，也感谢相信我们愿景、鼓励我们继续前进的客人和合作伙伴。”\n\n米其林三星是最高奖项，授予那些处于行业巅峰的厨师。米其林网站写道：“他们的烹饪被提升为一种艺术形式，其中一些菜品注定会成为经典。”这显然是在认可植物基食物在烹饪界日益增长的重要性。\n\n胡姆说：“我认为奢华品牌确实可以发挥作用，也负有责任。我们越有创造力，我们的未来就会越美好、越美味。”",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_3_passage_one_q50",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第3套 Passage One",
+    "questionNo": 50,
+    "stem": "What does the awarding of three Michelin stars to Eleven Madison Park indicate?",
+    "stemTranslation": "麦迪逊公园11号餐厅获得米其林三星说明了什么？",
+    "options": [
+      "A) An optimistic vision of vegan foods becoming mainstream.",
+      "B) A greater responsibility for the culinary world to undertake.",
+      "C) A strong incentive for more restaurants to offer healthier foods to their customers.",
+      "D) An explicit recognition of the rising importance of restaurants serving vegan foods."
+    ],
+    "answer": "D",
+    "answerTranslation": "这是对提供素食餐饮的餐厅日益重要这一趋势的明确认可。",
+    "contextRaw": "New York's Eleven Madison Park has become the first vegan restaurant to be awarded three Michelin stars.\n\nThe fine dining establishment received its first three-star Michelin rating in 2011 when the menu was famed for its fancy animal-based dishes.\n\nHowever, last year, the restaurant's co-owner and famous chef, Daniel Humm, made the bold decision to remove meat from the menu, citing our unsustainable food system. While cow milk is still served for tea and coffee, the menu is almost 100 percent vegan.\n\nAt the time, Humm acknowledged the move was risky, admitting that \"it wasn't clear if guests would come\" but called the gamble \"a risk worth taking.\"\n\n\"In view of the climate crisis, I didn't want to open the same restaurant,\" Humm told the Financial Times in an interview. \"If we can show the possibilities of eating plant-based food in this setting, it can open a lot of doors\" for others to follow.\n\nNow, this impressive new accomplishment validates Eleven Madison Park's decision to take meat off the menu and embrace plant-based foods, with Michelin's 2022 New York guide branding it a \"bold vision of luxury dining.\"\n\n\"We took the jump to transform Eleven Madison Park into a plant-based fine dining restaurant knowing in our hearts this is what we believed in,\" stated Humm on Instagram. \"Last night, we were honored to be awarded three Michelin stars for the 11th year in a row. I am so grateful to the team members who contributed through its nearly 25-year history. We are also grateful to our guests and partners who believed in our vision and encouraged us to push harder.\"\n\nThree Michelin stars is the highest award, given to chefs who are at the peak of their profession. \"Their cooking is elevated to an art form and some of their dishes are destined to become classics,\" reads Michelin's website, in a clear nod to plant-based food's growing significance in the culinary world.\n\n\"I think luxury companies have a real role to play and a responsibility,\" says Humm. \"The more creative we are, the more beautiful and delicious our future will be.\"",
+    "contextTranslation": "纽约麦迪逊公园11号餐厅成为首家获得米其林三星评级的素食餐厅。\n\n这家高级餐厅在2011年首次获得米其林三星评级，当时其菜单以精致的动物源菜品而闻名。\n\n然而，去年，该餐厅联合创始人、著名厨师丹尼尔·胡姆做出了大胆决定：将肉类从菜单中移除，理由是当前食物体系不可持续。虽然茶和咖啡仍提供牛奶，但菜单几乎百分之百为素食。\n\n当时，胡姆承认这一举措有风险，并坦言“不确定客人是否还会光顾”，但他称这次冒险“值得一试”。\n\n胡姆在接受《金融时报》采访时说：“鉴于气候危机，我不想重新开一家和过去一样的餐厅。如果我们能在这样的场景中展示植物基饮食的可能性，就能为其他人打开许多扇门。”\n\n如今，这一令人瞩目的新成就证明麦迪逊公园11号餐厅取消肉类菜品、拥抱植物基食物的决定是正确的。米其林2022年纽约指南将其称为“豪华餐饮的大胆愿景”。\n\n胡姆在社交媒体上表示：“我们毅然决定把麦迪逊公园11号转型为植物基高级餐厅，因为我们内心相信这就是我们认同的理念。昨晚，我们很荣幸连续第11年获得米其林三星。我非常感谢近25年来为餐厅发展做出贡献的团队成员，也感谢相信我们愿景、鼓励我们继续前进的客人和合作伙伴。”\n\n米其林三星是最高奖项，授予那些处于行业巅峰的厨师。米其林网站写道：“他们的烹饪被提升为一种艺术形式，其中一些菜品注定会成为经典。”这显然是在认可植物基食物在烹饪界日益增长的重要性。\n\n胡姆说：“我认为奢华品牌确实可以发挥作用，也负有责任。我们越有创造力，我们的未来就会越美好、越美味。”",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_3_passage_two_q51",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第3套 Passage Two",
+    "questionNo": 51,
+    "stem": "What does the passage say is of importance regarding genetic tests?",
+    "stemTranslation": "关于基因检测，文章认为重要的是什么？",
+    "options": [
+      "A) Knowing their accuracy.",
+      "B) Evaluating their applicability.",
+      "C) Utilizing the information they provide.",
+      "D) Weighing the consequences they have."
+    ],
+    "answer": "A",
+    "answerTranslation": "了解它们的准确性。",
+    "contextRaw": "With genetic testing becoming increasingly popular, many people are left wondering exactly how accurate it is. Whether you are taking a DNA test to build your extended DNA family tree, or want precise information on inborn health conditions, it is important to understand how accurate genetic tests are, and what information we can rely upon.\n\nHow accurate DNA tests are relies greatly upon the kind of test being taken, on the specific question you ask, and on how complex the genetics behind a trait is. For example, tests for traits that depend on a single gene provide much more reliable results, because you can see whether a disease-causing trait is present.\n\nAncestry tests claim to reveal our genetic identities. But saying you are 30 percent East Asian or American hardly reflects your real ancestry.\n\nWhat about using DNA tests to discover distant family members? There are tools to compare one's DNA with others to find distant relatives based on their genetic identification. These kinds of applications are generally accurate. It's relatively easy to tell whether two DNA samples belong to close relatives. With distant relatives, results become hazier.\n\nGenetic health tests claim to be able to detect certain hereditary diseases, or other health conditions. While certain rare diseases can be easily identified, most potential health conditions cannot be identified by genetic testing alone. The large majority of our traits and diseases also depend upon non-genetic factors, such as lifestyle, the environment, and many others.\n\nGenetic tests for multi-factorial traits are often very tricky to interpret. Height, for example, depends on hundreds of genes, each contributing a little to the outcome, together with a bunch of environmental factors. A test can look at many genes at once, but it's difficult to predict how they will play together. Then you should also account for non-genetic factors that are not written in the DNA.\n\nTests that offer to find your perfect romantic match and those claiming to predict personality or talents based on your DNA are pure nonsense. At the moment, the scientific bases for these applications are non-existent or incredibly weak.",
+    "contextTranslation": "随着基因检测越来越普及，许多人不禁想知道它到底有多准确。无论你是想通过DNA检测建立扩展家谱，还是想获得有关先天健康状况的准确信息，了解基因检测的准确性以及哪些信息值得信赖都非常重要。\n\nDNA检测的准确性很大程度上取决于检测类型、你提出的具体问题，以及某一特征背后的遗传机制有多复杂。例如，针对由单个基因决定的特征进行检测，结果会可靠得多，因为可以直接判断是否存在致病特征。\n\n血统检测声称可以揭示我们的遗传身份。但说你有30%的东亚或美洲血统，几乎无法反映你真实的祖先来源。\n\n那么，用DNA检测寻找远房亲属又如何呢？有些工具可以把一个人的DNA与他人的DNA进行比较，根据遗传标识寻找远亲。这类应用通常较为准确。判断两份DNA样本是否来自近亲相对容易；但对于远亲，结果就会变得更模糊。\n\n基因健康检测声称能够发现某些遗传性疾病或其他健康状况。虽然某些罕见疾病可以较容易地识别出来，但大多数潜在健康状况无法仅靠基因检测确定。我们绝大多数特征和疾病还取决于非遗传因素，例如生活方式、环境以及许多其他因素。\n\n针对多因素特征的基因检测往往很难解读。以身高为例，它取决于数百个基因，每个基因都对结果产生一点影响，同时还受到一系列环境因素影响。检测可以同时分析许多基因，但很难预测它们将如何共同发挥作用。此外，还应考虑那些没有写入DNA的非遗传因素。\n\n那些声称可以通过DNA为你找到完美恋爱对象，或预测性格、天赋的检测，纯属无稽之谈。目前，这类应用的科学基础要么不存在，要么极其薄弱。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_3_passage_two_q52",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第3套 Passage Two",
+    "questionNo": 52,
+    "stem": "What kind of genetic tests tend to be comparatively reliable?",
+    "stemTranslation": "哪类基因检测往往相对可靠？",
+    "options": [
+      "A) Those complex enough to reveal the genetics behind a trait.",
+      "B) Those looking for traits responsible for certain diseases.",
+      "C) Those focusing on the specific questions being asked.",
+      "D) Those looking for traits determined by a single gene."
+    ],
+    "answer": "D",
+    "answerTranslation": "那些检测由单个基因决定的特征的检测。",
+    "contextRaw": "With genetic testing becoming increasingly popular, many people are left wondering exactly how accurate it is. Whether you are taking a DNA test to build your extended DNA family tree, or want precise information on inborn health conditions, it is important to understand how accurate genetic tests are, and what information we can rely upon.\n\nHow accurate DNA tests are relies greatly upon the kind of test being taken, on the specific question you ask, and on how complex the genetics behind a trait is. For example, tests for traits that depend on a single gene provide much more reliable results, because you can see whether a disease-causing trait is present.\n\nAncestry tests claim to reveal our genetic identities. But saying you are 30 percent East Asian or American hardly reflects your real ancestry.\n\nWhat about using DNA tests to discover distant family members? There are tools to compare one's DNA with others to find distant relatives based on their genetic identification. These kinds of applications are generally accurate. It's relatively easy to tell whether two DNA samples belong to close relatives. With distant relatives, results become hazier.\n\nGenetic health tests claim to be able to detect certain hereditary diseases, or other health conditions. While certain rare diseases can be easily identified, most potential health conditions cannot be identified by genetic testing alone. The large majority of our traits and diseases also depend upon non-genetic factors, such as lifestyle, the environment, and many others.\n\nGenetic tests for multi-factorial traits are often very tricky to interpret. Height, for example, depends on hundreds of genes, each contributing a little to the outcome, together with a bunch of environmental factors. A test can look at many genes at once, but it's difficult to predict how they will play together. Then you should also account for non-genetic factors that are not written in the DNA.\n\nTests that offer to find your perfect romantic match and those claiming to predict personality or talents based on your DNA are pure nonsense. At the moment, the scientific bases for these applications are non-existent or incredibly weak.",
+    "contextTranslation": "随着基因检测越来越普及，许多人不禁想知道它到底有多准确。无论你是想通过DNA检测建立扩展家谱，还是想获得有关先天健康状况的准确信息，了解基因检测的准确性以及哪些信息值得信赖都非常重要。\n\nDNA检测的准确性很大程度上取决于检测类型、你提出的具体问题，以及某一特征背后的遗传机制有多复杂。例如，针对由单个基因决定的特征进行检测，结果会可靠得多，因为可以直接判断是否存在致病特征。\n\n血统检测声称可以揭示我们的遗传身份。但说你有30%的东亚或美洲血统，几乎无法反映你真实的祖先来源。\n\n那么，用DNA检测寻找远房亲属又如何呢？有些工具可以把一个人的DNA与他人的DNA进行比较，根据遗传标识寻找远亲。这类应用通常较为准确。判断两份DNA样本是否来自近亲相对容易；但对于远亲，结果就会变得更模糊。\n\n基因健康检测声称能够发现某些遗传性疾病或其他健康状况。虽然某些罕见疾病可以较容易地识别出来，但大多数潜在健康状况无法仅靠基因检测确定。我们绝大多数特征和疾病还取决于非遗传因素，例如生活方式、环境以及许多其他因素。\n\n针对多因素特征的基因检测往往很难解读。以身高为例，它取决于数百个基因，每个基因都对结果产生一点影响，同时还受到一系列环境因素影响。检测可以同时分析许多基因，但很难预测它们将如何共同发挥作用。此外，还应考虑那些没有写入DNA的非遗传因素。\n\n那些声称可以通过DNA为你找到完美恋爱对象，或预测性格、天赋的检测，纯属无稽之谈。目前，这类应用的科学基础要么不存在，要么极其薄弱。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_3_passage_two_q53",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第3套 Passage Two",
+    "questionNo": 53,
+    "stem": "What do we learn about genetic health tests from the passage?",
+    "stemTranslation": "关于基因健康检测，我们从文章中了解到什么？",
+    "options": [
+      "A) They are unable to identify certain hereditary diseases by themselves.",
+      "B) They are generally unable to separate genetic and non-genetic factors.",
+      "C) They cannot independently identify the majority of potential diseases.",
+      "D) They cannot tell apart the impact of lifestyle and that of the environment."
+    ],
+    "answer": "C",
+    "answerTranslation": "它们无法独立识别大多数潜在疾病。",
+    "contextRaw": "With genetic testing becoming increasingly popular, many people are left wondering exactly how accurate it is. Whether you are taking a DNA test to build your extended DNA family tree, or want precise information on inborn health conditions, it is important to understand how accurate genetic tests are, and what information we can rely upon.\n\nHow accurate DNA tests are relies greatly upon the kind of test being taken, on the specific question you ask, and on how complex the genetics behind a trait is. For example, tests for traits that depend on a single gene provide much more reliable results, because you can see whether a disease-causing trait is present.\n\nAncestry tests claim to reveal our genetic identities. But saying you are 30 percent East Asian or American hardly reflects your real ancestry.\n\nWhat about using DNA tests to discover distant family members? There are tools to compare one's DNA with others to find distant relatives based on their genetic identification. These kinds of applications are generally accurate. It's relatively easy to tell whether two DNA samples belong to close relatives. With distant relatives, results become hazier.\n\nGenetic health tests claim to be able to detect certain hereditary diseases, or other health conditions. While certain rare diseases can be easily identified, most potential health conditions cannot be identified by genetic testing alone. The large majority of our traits and diseases also depend upon non-genetic factors, such as lifestyle, the environment, and many others.\n\nGenetic tests for multi-factorial traits are often very tricky to interpret. Height, for example, depends on hundreds of genes, each contributing a little to the outcome, together with a bunch of environmental factors. A test can look at many genes at once, but it's difficult to predict how they will play together. Then you should also account for non-genetic factors that are not written in the DNA.\n\nTests that offer to find your perfect romantic match and those claiming to predict personality or talents based on your DNA are pure nonsense. At the moment, the scientific bases for these applications are non-existent or incredibly weak.",
+    "contextTranslation": "随着基因检测越来越普及，许多人不禁想知道它到底有多准确。无论你是想通过DNA检测建立扩展家谱，还是想获得有关先天健康状况的准确信息，了解基因检测的准确性以及哪些信息值得信赖都非常重要。\n\nDNA检测的准确性很大程度上取决于检测类型、你提出的具体问题，以及某一特征背后的遗传机制有多复杂。例如，针对由单个基因决定的特征进行检测，结果会可靠得多，因为可以直接判断是否存在致病特征。\n\n血统检测声称可以揭示我们的遗传身份。但说你有30%的东亚或美洲血统，几乎无法反映你真实的祖先来源。\n\n那么，用DNA检测寻找远房亲属又如何呢？有些工具可以把一个人的DNA与他人的DNA进行比较，根据遗传标识寻找远亲。这类应用通常较为准确。判断两份DNA样本是否来自近亲相对容易；但对于远亲，结果就会变得更模糊。\n\n基因健康检测声称能够发现某些遗传性疾病或其他健康状况。虽然某些罕见疾病可以较容易地识别出来，但大多数潜在健康状况无法仅靠基因检测确定。我们绝大多数特征和疾病还取决于非遗传因素，例如生活方式、环境以及许多其他因素。\n\n针对多因素特征的基因检测往往很难解读。以身高为例，它取决于数百个基因，每个基因都对结果产生一点影响，同时还受到一系列环境因素影响。检测可以同时分析许多基因，但很难预测它们将如何共同发挥作用。此外，还应考虑那些没有写入DNA的非遗传因素。\n\n那些声称可以通过DNA为你找到完美恋爱对象，或预测性格、天赋的检测，纯属无稽之谈。目前，这类应用的科学基础要么不存在，要么极其薄弱。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_3_passage_two_q54",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第3套 Passage Two",
+    "questionNo": 54,
+    "stem": "What makes genetic tests for multi-factorial traits tricky to interpret?",
+    "stemTranslation": "是什么让多因素特征的基因检测难以解读？",
+    "options": [
+      "A) The challenge in determining the role of each individual gene.",
+      "B) The difficulty of foretelling how the various genes will interact.",
+      "C) The difficulty of telling genetic factors from environmental ones.",
+      "D) The enormous work to identify the hundreds of genes involved."
+    ],
+    "answer": "B",
+    "answerTranslation": "难以预测不同基因将如何相互作用。",
+    "contextRaw": "With genetic testing becoming increasingly popular, many people are left wondering exactly how accurate it is. Whether you are taking a DNA test to build your extended DNA family tree, or want precise information on inborn health conditions, it is important to understand how accurate genetic tests are, and what information we can rely upon.\n\nHow accurate DNA tests are relies greatly upon the kind of test being taken, on the specific question you ask, and on how complex the genetics behind a trait is. For example, tests for traits that depend on a single gene provide much more reliable results, because you can see whether a disease-causing trait is present.\n\nAncestry tests claim to reveal our genetic identities. But saying you are 30 percent East Asian or American hardly reflects your real ancestry.\n\nWhat about using DNA tests to discover distant family members? There are tools to compare one's DNA with others to find distant relatives based on their genetic identification. These kinds of applications are generally accurate. It's relatively easy to tell whether two DNA samples belong to close relatives. With distant relatives, results become hazier.\n\nGenetic health tests claim to be able to detect certain hereditary diseases, or other health conditions. While certain rare diseases can be easily identified, most potential health conditions cannot be identified by genetic testing alone. The large majority of our traits and diseases also depend upon non-genetic factors, such as lifestyle, the environment, and many others.\n\nGenetic tests for multi-factorial traits are often very tricky to interpret. Height, for example, depends on hundreds of genes, each contributing a little to the outcome, together with a bunch of environmental factors. A test can look at many genes at once, but it's difficult to predict how they will play together. Then you should also account for non-genetic factors that are not written in the DNA.\n\nTests that offer to find your perfect romantic match and those claiming to predict personality or talents based on your DNA are pure nonsense. At the moment, the scientific bases for these applications are non-existent or incredibly weak.",
+    "contextTranslation": "随着基因检测越来越普及，许多人不禁想知道它到底有多准确。无论你是想通过DNA检测建立扩展家谱，还是想获得有关先天健康状况的准确信息，了解基因检测的准确性以及哪些信息值得信赖都非常重要。\n\nDNA检测的准确性很大程度上取决于检测类型、你提出的具体问题，以及某一特征背后的遗传机制有多复杂。例如，针对由单个基因决定的特征进行检测，结果会可靠得多，因为可以直接判断是否存在致病特征。\n\n血统检测声称可以揭示我们的遗传身份。但说你有30%的东亚或美洲血统，几乎无法反映你真实的祖先来源。\n\n那么，用DNA检测寻找远房亲属又如何呢？有些工具可以把一个人的DNA与他人的DNA进行比较，根据遗传标识寻找远亲。这类应用通常较为准确。判断两份DNA样本是否来自近亲相对容易；但对于远亲，结果就会变得更模糊。\n\n基因健康检测声称能够发现某些遗传性疾病或其他健康状况。虽然某些罕见疾病可以较容易地识别出来，但大多数潜在健康状况无法仅靠基因检测确定。我们绝大多数特征和疾病还取决于非遗传因素，例如生活方式、环境以及许多其他因素。\n\n针对多因素特征的基因检测往往很难解读。以身高为例，它取决于数百个基因，每个基因都对结果产生一点影响，同时还受到一系列环境因素影响。检测可以同时分析许多基因，但很难预测它们将如何共同发挥作用。此外，还应考虑那些没有写入DNA的非遗传因素。\n\n那些声称可以通过DNA为你找到完美恋爱对象，或预测性格、天赋的检测，纯属无稽之谈。目前，这类应用的科学基础要么不存在，要么极其薄弱。",
+    "status": "unverified"
+  },
+  {
+    "id": "reading_2025_12_3_passage_two_q55",
+    "type": "reading",
+    "sourceFile": "阅读练习/阅读理解整理.docx",
+    "section": "2025年12月四级真题第3套 Passage Two",
+    "questionNo": 55,
+    "stem": "What does the passage say about DNA tests to predict personality or talents?",
+    "stemTranslation": "文章如何评价用于预测性格或天赋的DNA检测？",
+    "options": [
+      "A) They are solid scientific bases for application.",
+      "B) They are helpful in finding a romantic match.",
+      "C) They do not look promising at the moment.",
+      "D) They do not make any sense at present."
+    ],
+    "answer": "D",
+    "answerTranslation": "目前来看它们没有任何意义。",
+    "contextRaw": "With genetic testing becoming increasingly popular, many people are left wondering exactly how accurate it is. Whether you are taking a DNA test to build your extended DNA family tree, or want precise information on inborn health conditions, it is important to understand how accurate genetic tests are, and what information we can rely upon.\n\nHow accurate DNA tests are relies greatly upon the kind of test being taken, on the specific question you ask, and on how complex the genetics behind a trait is. For example, tests for traits that depend on a single gene provide much more reliable results, because you can see whether a disease-causing trait is present.\n\nAncestry tests claim to reveal our genetic identities. But saying you are 30 percent East Asian or American hardly reflects your real ancestry.\n\nWhat about using DNA tests to discover distant family members? There are tools to compare one's DNA with others to find distant relatives based on their genetic identification. These kinds of applications are generally accurate. It's relatively easy to tell whether two DNA samples belong to close relatives. With distant relatives, results become hazier.\n\nGenetic health tests claim to be able to detect certain hereditary diseases, or other health conditions. While certain rare diseases can be easily identified, most potential health conditions cannot be identified by genetic testing alone. The large majority of our traits and diseases also depend upon non-genetic factors, such as lifestyle, the environment, and many others.\n\nGenetic tests for multi-factorial traits are often very tricky to interpret. Height, for example, depends on hundreds of genes, each contributing a little to the outcome, together with a bunch of environmental factors. A test can look at many genes at once, but it's difficult to predict how they will play together. Then you should also account for non-genetic factors that are not written in the DNA.\n\nTests that offer to find your perfect romantic match and those claiming to predict personality or talents based on your DNA are pure nonsense. At the moment, the scientific bases for these applications are non-existent or incredibly weak.",
+    "contextTranslation": "随着基因检测越来越普及，许多人不禁想知道它到底有多准确。无论你是想通过DNA检测建立扩展家谱，还是想获得有关先天健康状况的准确信息，了解基因检测的准确性以及哪些信息值得信赖都非常重要。\n\nDNA检测的准确性很大程度上取决于检测类型、你提出的具体问题，以及某一特征背后的遗传机制有多复杂。例如，针对由单个基因决定的特征进行检测，结果会可靠得多，因为可以直接判断是否存在致病特征。\n\n血统检测声称可以揭示我们的遗传身份。但说你有30%的东亚或美洲血统，几乎无法反映你真实的祖先来源。\n\n那么，用DNA检测寻找远房亲属又如何呢？有些工具可以把一个人的DNA与他人的DNA进行比较，根据遗传标识寻找远亲。这类应用通常较为准确。判断两份DNA样本是否来自近亲相对容易；但对于远亲，结果就会变得更模糊。\n\n基因健康检测声称能够发现某些遗传性疾病或其他健康状况。虽然某些罕见疾病可以较容易地识别出来，但大多数潜在健康状况无法仅靠基因检测确定。我们绝大多数特征和疾病还取决于非遗传因素，例如生活方式、环境以及许多其他因素。\n\n针对多因素特征的基因检测往往很难解读。以身高为例，它取决于数百个基因，每个基因都对结果产生一点影响，同时还受到一系列环境因素影响。检测可以同时分析许多基因，但很难预测它们将如何共同发挥作用。此外，还应考虑那些没有写入DNA的非遗传因素。\n\n那些声称可以通过DNA为你找到完美恋爱对象，或预测性格、天赋的检测，纯属无稽之谈。目前，这类应用的科学基础要么不存在，要么极其薄弱。",
+    "status": "unverified"
+  }
+];
+
+const STORAGE_KEY = "embedded_quiz_state_v2";
+let currentType = "all";
+let currentStatus = "all";
+let currentSection = "all";
+let filtered = [];
+let history = loadHistory();
+
+function $(id) { return document.getElementById(id); }
+
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+  catch { return {}; }
+}
+
+function saveHistory() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+}
+
+function normalizeAnswer(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s*,\s*/g, ",")
+    .replace(/\s+/g, " ");
+}
+
+function acceptedAnswers(answer) {
+  const variants = [];
+  String(answer || "").split("/").forEach(part => {
+    const normalized = normalizeAnswer(part);
+    if (!normalized) return;
+    variants.push(normalized);
+    variants.push(normalized.replace(/,/g, " "));
+  });
+  return [...new Set(variants.map(normalizeAnswer).filter(Boolean))];
+}
+
+function itemAnswerText(item) {
+  if (item.type === "vocabulary") return item.answer;
+  const option = (item.options || []).find(opt => opt.startsWith(item.answer + ")"));
+  return option || item.answer;
+}
+
+function optionBody(option) {
+  return String(option || "").replace(/^[A-D]\)\s*/, "").trim();
+}
+
+function optionWords(option) {
+  const stopWords = new Set([
+    "a", "an", "the", "and", "or", "but", "to", "of", "in", "on", "for", "with", "by", "as", "at", "from",
+    "is", "are", "was", "were", "be", "being", "been", "it", "its", "they", "their", "them", "he", "she", "his",
+    "her", "we", "our", "you", "your", "that", "this", "these", "those", "what", "which", "who", "how", "why",
+    "do", "does", "did", "can", "could", "would", "should", "will", "may", "might", "not", "no", "more", "most"
+  ]);
+  const text = optionBody(option).toLowerCase();
+  return (text.match(/[a-z][a-z'-]{2,}/g) || [])
+    .map(word => word.replace(/^'+|'+$/g, ""))
+    .filter(word => word.length > 2 && !stopWords.has(word));
+}
+
+function hasPattern(text, pattern) {
+  return pattern.test(String(text || "").toLowerCase());
+}
+
+function buildMemoryAnalysis(item) {
+  if (!item || item.type === "vocabulary" || !Array.isArray(item.options) || item.options.length !== 4) return "";
+  const correctOption = (item.options || []).find(opt => opt.startsWith(item.answer + ")"));
+  if (!correctOption) return "";
+
+  const correctText = optionBody(correctOption);
+  const wrongOptions = item.options.filter(opt => opt !== correctOption);
+  const wrongText = wrongOptions.map(optionBody).join(" ").toLowerCase();
+  const wrongWords = new Set(wrongOptions.flatMap(optionWords));
+  const uniqueWords = [...new Set(optionWords(correctOption))]
+    .filter(word => !wrongWords.has(word))
+    .slice(0, 4);
+  const notes = [];
+
+  if (uniqueWords.length) {
+    notes.push(`正确项独有关键词：${uniqueWords.join(", ")}。复盘时优先回到原文里找这些词或它们的同义表达。`);
+  }
+
+  const contrastPatterns = [
+    { label: "数字或比例", pattern: /\b\d+[%\w-]*\b|percent|percentage|million|billion|decade|year|years/ },
+    { label: "因果", pattern: /\bbecause|since|as a result|lead(?:s|ing)? to|result(?:s|ed)? from|therefore|thus|due to\b/ },
+    { label: "转折", pattern: /\bhowever|but|although|though|despite|whereas|while|instead\b/ },
+    { label: "比较或最高级", pattern: /\bmore|less|most|least|better|worse|higher|lower|rather than|compared with\b/ },
+    { label: "态度或判断", pattern: /\bimportant|necessary|possible|likely|unlikely|difficult|beneficial|harmful|risk|worth\b/ },
+    { label: "时间线", pattern: /\bbefore|after|during|currently|previously|eventually|first|last|recently|now|then\b/ },
+  ];
+  const correctSignals = contrastPatterns
+    .filter(({ pattern }) => hasPattern(correctText, pattern) && !hasPattern(wrongText, pattern))
+    .map(({ label }) => label);
+  if (correctSignals.length) {
+    notes.push(`正确项的明显特征：${correctSignals.join("、")}。这类题通常要核对原文中的同类信号。`);
+  }
+
+  const negationCount = wrongOptions.filter(opt => hasPattern(opt, /\bno|not|never|none|without|fail(?:s|ed)? to|unable\b/)).length;
+  const correctHasNegation = hasPattern(correctText, /\bno|not|never|none|without|fail(?:s|ed)? to|unable\b/);
+  if (correctHasNegation && negationCount === 0) {
+    notes.push("正确项带否定表达，容易和正向表述混淆；记忆时把否定词一起记。");
+  } else if (!correctHasNegation && negationCount >= 2) {
+    notes.push("多个干扰项带否定或绝对化表达，正确项更偏正向或中性。");
+  }
+
+  const absoluteCount = wrongOptions.filter(opt => hasPattern(opt, /\balways|never|all|none|only|completely|entirely|must\b/)).length;
+  const correctHasAbsolute = hasPattern(correctText, /\balways|never|all|none|only|completely|entirely|must\b/);
+  if (!correctHasAbsolute && absoluteCount >= 2) {
+    notes.push("干扰项里有较强的绝对词，回忆时注意原文是否真的支持这么绝对的说法。");
+  }
+
+  if (item.stemTranslation) {
+    notes.push(`题干中文定位：${item.stemTranslation}`);
+  }
+
+  if (!notes.length) {
+    notes.push("记忆方法：先背正确项的核心意思，再回看其它三个选项分别错在范围、对象、因果或程度是否被改动。");
+  }
+
+  return `<div class="analysis"><strong>分析辅助记忆</strong><ul>${notes.map(note => `<li>${escapeHtml(note)}</li>`).join("")}</ul></div>`;
+}
+
+function itemById(id) {
+  return QUIZ_DB.find(item => item.id === id);
+}
+
+function init() {
+  $("totalCount").textContent = QUIZ_DB.length;
+  $("verifiedCount").textContent = QUIZ_DB.filter(i => i.status === "verified").length;
+  $("unverifiedCount").textContent = QUIZ_DB.filter(i => i.status === "unverified").length;
+  $("sourceCount").textContent = new Set(QUIZ_DB.map(i => i.sourceFile)).size;
+  buildSections();
+  bindEvents();
+  applyFilters();
+}
+
+function buildSections() {
+  const select = $("sectionFilter");
+  const sections = [...new Set(QUIZ_DB.map(i => i.section))].sort((a, b) => a.localeCompare(b));
+  select.innerHTML = '<option value="all">All sections / Passage</option>' +
+    sections.map(s => `<option value="${escapeAttr(s)}">${escapeHtml(s)}</option>`).join("");
+}
+
+function bindEvents() {
+  document.querySelectorAll("[data-type]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentType = btn.dataset.type;
+      document.querySelectorAll("[data-type]").forEach(b => b.classList.toggle("active", b === btn));
+      applyFilters();
+    });
+  });
+  $("statusFilter").addEventListener("change", e => { currentStatus = e.target.value; applyFilters(); });
+  $("sectionFilter").addEventListener("change", e => { currentSection = e.target.value; applyFilters(); });
+  $("shuffleBtn").addEventListener("click", shuffleCurrent);
+  $("shuffleBtnInline").addEventListener("click", shuffleCurrent);
+  $("resetBtn").addEventListener("click", resetProgress);
+  $("questionPanel").addEventListener("click", handleQuestionClick);
+  $("questionPanel").addEventListener("keydown", handleQuestionKeydown);
+}
+
+function applyFilters() {
+  filtered = QUIZ_DB.filter(item => {
+    return (currentType === "all" || item.type === currentType) &&
+      (currentStatus === "all" || item.status === currentStatus) &&
+      (currentSection === "all" || item.section === currentSection);
+  });
+  render();
+}
+
+function render() {
+  $("filteredCount").textContent = filtered.length;
+  updateStats();
+  if (!filtered.length) {
+    $("questionPanel").innerHTML = '<div class="empty">No questions match the current filters.</div>';
+    $("jumpList").innerHTML = "";
+    return;
+  }
+  $("questionPanel").innerHTML = `
+    <p class="flow-note">Vertical practice mode: scroll freely. Multiple-choice answers are checked immediately after click.</p>
+    <div class="question-list">${filtered.map((item, idx) => renderQuestionCard(item, idx)).join("")}</div>
+  `;
+  restoreAnsweredState();
+  renderJumpList();
+}
+
+function renderQuestionCard(item, idx) {
+  const typeName = { vocabulary: "Vocabulary", listening: "Listening", reading: "Reading" }[item.type];
+  const statusText = item.status === "verified" ? "Verified" : "Needs review";
+  const statusClass = item.status === "verified" ? "" : " warn";
+  const context = item.type === "reading" ? `
+    <details class="reading-context-wrap">
+      <summary>Passage text / translation</summary>
+      <div class="reading-context">
+        <div class="context-box">${escapeHtml(item.contextRaw || "")}</div>
+        <div class="context-box">${escapeHtml(item.contextTranslation || "")}</div>
+      </div>
+    </details>` : "";
+  const stemTranslation = item.stemTranslation ? `<p class="muted">${escapeHtml(item.stemTranslation)}</p>` : "";
+  const answerUi = item.type === "vocabulary"
+    ? `<input class="answer-input" data-input="${escapeAttr(item.id)}" type="text" placeholder="Type answer and press Enter" autocomplete="off">`
+    : `<div class="options">${(item.options || []).map((opt, optIdx) =>
+        `<button class="option" data-id="${escapeAttr(item.id)}" data-choice="${escapeAttr(opt.charAt(0))}" type="button">${optIdx + 1}. ${escapeHtml(opt)}</button>`).join("")}</div>`;
+  return `
+    <article id="card-${escapeAttr(item.id)}" class="question-card" data-id="${escapeAttr(item.id)}">
+      <div class="pill-row">
+        <span class="question-index">${idx + 1}</span>
+        <span class="pill">${typeName}</span>
+        <span class="pill">${escapeHtml(item.section)}</span>
+        <span class="pill">No. ${item.questionNo}</span>
+        <span class="pill${statusClass}">${statusText}</span>
+      </div>
+      ${context}
+      <div class="stem">${escapeHtml(item.stem)}</div>
+      ${stemTranslation}
+      ${answerUi}
+      <div class="actions">
+        ${item.type === "vocabulary" ? `<button data-action="check-vocab" data-id="${escapeAttr(item.id)}" class="primary" type="button">Check</button>` : ""}
+        <button data-action="reveal" data-id="${escapeAttr(item.id)}" type="button">Show answer</button>
+      </div>
+      <div class="feedback" data-feedback="${escapeAttr(item.id)}">Source: ${escapeHtml(item.sourceFile)}</div>
+    </article>
+  `;
+}
+
+function handleQuestionClick(event) {
+  const option = event.target.closest(".option");
+  if (option) {
+    checkChoice(option.dataset.id, option.dataset.choice);
+    return;
+  }
+  const action = event.target.closest("[data-action]");
+  if (!action) return;
+  if (action.dataset.action === "check-vocab") checkVocabulary(action.dataset.id);
+  if (action.dataset.action === "reveal") revealAnswer(action.dataset.id);
+}
+
+function handleQuestionKeydown(event) {
+  if (event.key !== "Enter") return;
+  const input = event.target.closest("[data-input]");
+  if (input) checkVocabulary(input.dataset.input);
+}
+
+function checkChoice(id, choice) {
+  const item = itemById(id);
+  const card = cardFor(id);
+  if (!item || !card) return;
+  const correct = normalizeAnswer(choice) === normalizeAnswer(item.answer);
+  card.querySelectorAll(".option").forEach(btn => {
+    btn.classList.toggle("selected", btn.dataset.choice === choice);
+    btn.classList.toggle("correct", btn.dataset.choice === item.answer);
+    btn.classList.toggle("wrong", btn.dataset.choice === choice && !correct);
+  });
+  recordAnswer(item, correct);
+  showFeedback(id, correct ? "ok" : "bad", correct ? "Correct" : "Wrong", item);
+}
+
+function checkVocabulary(id) {
+  const item = itemById(id);
+  const card = cardFor(id);
+  if (!item || !card) return;
+  const input = card.querySelector(`[data-input="${cssEscape(id)}"]`);
+  const correct = acceptedAnswers(item.answer).includes(normalizeAnswer(input ? input.value : ""));
+  recordAnswer(item, correct);
+  showFeedback(id, correct ? "ok" : "bad", correct ? "Correct" : "Wrong", item);
+}
+
+function revealAnswer(id) {
+  const item = itemById(id);
+  const card = cardFor(id);
+  if (!item || !card) return;
+  if (item.type === "vocabulary") {
+    const input = card.querySelector(`[data-input="${cssEscape(id)}"]`);
+    const typed = normalizeAnswer(input ? input.value : "");
+    if (!typed && !history[item.id]) {
+      recordAnswer(item, false);
+      showFeedback(id, "bad", "Wrong", item);
+      return;
+    }
+  }
+  if (item.type !== "vocabulary") {
+    card.querySelectorAll(".option").forEach(btn => {
+      btn.classList.toggle("correct", btn.dataset.choice === item.answer);
+      btn.classList.remove("wrong");
+    });
+  }
+  showFeedback(id, "", "Answer", item);
+}
+
+function recordAnswer(item, correct) {
+  history[item.id] = { correct, at: Date.now() };
+  saveHistory();
+  const card = cardFor(item.id);
+  if (card) {
+    card.classList.toggle("answered-ok", correct);
+    card.classList.toggle("answered-bad", !correct);
+  }
+  updateStats();
+  renderJumpList();
+}
+
+function showFeedback(id, kind, title, item) {
+  const box = document.querySelector(`[data-feedback="${cssEscape(id)}"]`);
+  if (!box) return;
+  const extraLabel = item.type === "listening" ? "正确答案中文" : "答案翻译";
+  const extra = item.answerTranslation ? `<div class="muted">${extraLabel}: ${escapeHtml(item.answerTranslation)}</div>` : "";
+  const analysis = buildMemoryAnalysis(item);
+  box.className = `feedback visible ${kind}`;
+  box.innerHTML = `<strong>${escapeHtml(title)}</strong><div>Correct answer: ${escapeHtml(itemAnswerText(item))}</div>${extra}${analysis}`;
+}
+
+function restoreAnsweredState() {
+  filtered.forEach(item => {
+    const h = history[item.id];
+    if (!h) return;
+    const card = cardFor(item.id);
+    if (!card) return;
+    card.classList.toggle("answered-ok", h.correct);
+    card.classList.toggle("answered-bad", !h.correct);
+    showFeedback(item.id, h.correct ? "ok" : "bad", h.correct ? "Correct" : "Wrong", item);
+    if (item.type !== "vocabulary") {
+      card.querySelectorAll(".option").forEach(btn => {
+        btn.classList.toggle("correct", btn.dataset.choice === item.answer);
+      });
+    }
+  });
+}
+
+function renderJumpList() {
+  const list = $("jumpList");
+  list.innerHTML = filtered.map((item, idx) => {
+    const h = history[item.id];
+    const dotClass = h ? (h.correct ? "ok" : "bad") : "";
+    return `<button class="jump" data-jump="${escapeAttr(item.id)}" type="button">
+      <span>${idx + 1}</span><span>No.${item.questionNo} ${escapeHtml(item.section)}</span><span class="dot ${dotClass}"></span>
+    </button>`;
+  }).join("");
+  list.querySelectorAll("[data-jump]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const card = cardFor(btn.dataset.jump);
+      if (card) card.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+  updateStats();
+}
+
+function updateStats() {
+  const total = filtered.length;
+  const done = filtered.filter(item => history[item.id]).length;
+  const right = filtered.filter(item => history[item.id]?.correct).length;
+  const wrong = Math.max(0, done - right);
+  const progress = total ? Math.round((done / total) * 100) : 0;
+  const accuracy = done ? Math.round((right / done) * 100) : 0;
+  $("currentCount").textContent = done;
+  $("doneCount").textContent = done;
+  $("rightCount").textContent = right;
+  $("wrongCount").textContent = wrong;
+  $("wrongCountSide").textContent = wrong;
+  $("accuracyRate").textContent = `${accuracy}%`;
+  $("accuracyDetail").textContent = done ? `${right} 正确 / ${done} 已答` : "还没有答题记录";
+  $("bar").style.width = `${progress}%`;
+  $("accuracyBar").style.width = `${accuracy}%`;
+}
+
+function shuffleCurrent() {
+  for (let i = filtered.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+  }
+  render();
+}
+
+function resetProgress() {
+  if (!confirm("Clear local practice records?")) return;
+  history = {};
+  saveHistory();
+  render();
+}
+
+function cardFor(id) {
+  return document.getElementById(`card-${id}`);
+}
+
+function cssEscape(value) {
+  if (window.CSS && CSS.escape) return CSS.escape(value);
+  return String(value).replace(/["\\]/g, "\\$&");
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[ch]));
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value).replace(/`/g, "&#96;");
+}
+
+document.addEventListener("DOMContentLoaded", init);
+
+  </script>
+</body>
+</html>
