@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>&#35745;&#31639;&#26426;&#32593;&#32476;90&#39064;&#32451;&#20064;</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --ink: #18212f;
+      --muted: #657184;
+      --line: #dfe5ee;
+      --accent: #0f766e;
+      --accent-strong: #0b5f59;
+      --good: #15803d;
+      --bad: #b91c1c;
+      --shadow: 0 16px 40px rgba(16, 24, 40, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(180deg, rgba(15, 118, 110, 0.10), rgba(15, 118, 110, 0) 340px), var(--bg);
+    }
+    button, input, select { font: inherit; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: 300px minmax(0, 1fr); }
+    .sidebar { position: sticky; top: 0; height: 100vh; overflow: auto; padding: 28px 20px; background: #0f1f2e; color: #edf6f5; }
+    .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
+    .brand-mark { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 8px; background: var(--accent); color: white; font-weight: 800; }
+    h1 { margin: 0; font-size: 20px; line-height: 1.25; letter-spacing: 0; }
+    .subtitle { margin: 4px 0 0; color: #a9bac7; font-size: 13px; }
+    .side-section { padding: 18px 0; border-top: 1px solid rgba(255,255,255,.12); }
+    .side-title { margin: 0 0 10px; color: #b6c8d4; font-size: 12px; letter-spacing: 0; }
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat { padding: 12px; border: 1px solid rgba(255,255,255,.12); border-radius: 8px; background: rgba(255,255,255,.05); }
+    .stat strong { display: block; font-size: 22px; line-height: 1; }
+    .stat span { display: block; margin-top: 6px; color: #a9bac7; font-size: 12px; }
+    .progress { height: 10px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.12); }
+    .progress-bar { height: 100%; width: 0; background: #22c55e; transition: width .2s ease; }
+    .nav-list { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
+    .nav-btn { min-height: 36px; border: 1px solid rgba(255,255,255,.16); border-radius: 8px; background: rgba(255,255,255,.06); color: #e6f0f0; cursor: pointer; }
+    .nav-btn:hover, .nav-btn.active { background: var(--accent); border-color: var(--accent); }
+    .nav-btn.done { color: #d1fae5; border-color: rgba(34,197,94,.5); }
+    .nav-btn.wrong { color: #fecaca; border-color: rgba(248,113,113,.55); }
+    .main { min-width: 0; padding: 32px; }
+    .toolbar { position: sticky; top: 0; z-index: 2; display: grid; grid-template-columns: minmax(200px, 1fr) 160px 160px auto; gap: 12px; padding: 14px; margin-bottom: 22px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,.92); backdrop-filter: blur(10px); box-shadow: var(--shadow); }
+    .field { min-height: 42px; width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 0 12px; color: var(--ink); background: white; }
+    .btn { min-height: 42px; border: 0; border-radius: 8px; padding: 0 14px; background: var(--accent); color: white; font-weight: 700; cursor: pointer; }
+    .btn:hover { background: var(--accent-strong); }
+    .btn.secondary { background: #e8eef4; color: #243244; }
+    .btn.secondary:hover { background: #dce5ee; }
+    .hero { display: grid; grid-template-columns: 1.4fr .9fr; gap: 20px; align-items: stretch; margin-bottom: 22px; }
+    .hero-panel { padding: 28px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: var(--shadow); }
+    .hero h2 { margin: 0 0 10px; font-size: 30px; line-height: 1.2; letter-spacing: 0; }
+    .hero p { margin: 0; color: var(--muted); line-height: 1.75; }
+    .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 100%; }
+    .quick { display: grid; align-content: center; min-height: 94px; padding: 18px; border-radius: 8px; background: #eef7f5; border: 1px solid #cae5df; }
+    .quick b { font-size: 24px; }
+    .quick span { margin-top: 6px; color: var(--muted); font-size: 13px; }
+    .question-list { display: grid; gap: 16px; }
+    .question-card { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: 0 8px 24px rgba(16,24,40,.055); overflow: hidden; }
+    .question-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--line); background: #fbfcfe; }
+    .question-title { display: flex; gap: 12px; min-width: 0; }
+    .qid { flex: 0 0 auto; width: 44px; height: 32px; display: grid; place-items: center; border-radius: 8px; background: #e8f4f2; color: var(--accent-strong); font-weight: 800; }
+    .question-text { margin: 4px 0 0; line-height: 1.65; font-size: 17px; font-weight: 700; }
+    .tag { flex: 0 0 auto; border-radius: 999px; padding: 6px 10px; background: #f0f3f7; color: var(--muted); font-size: 12px; }
+    .options { display: grid; gap: 10px; padding: 18px 20px 6px; }
+    .option { display: grid; grid-template-columns: 38px 1fr; gap: 10px; align-items: center; min-height: 48px; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; background: white; cursor: pointer; }
+    .option:hover { border-color: #99c7c1; background: #f6fbfa; }
+    .option input { display: none; }
+    .letter { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; background: #edf2f7; color: #344054; font-weight: 800; }
+    .option.correct { border-color: rgba(21,128,61,.45); background: #f0fdf4; }
+    .option.correct .letter { background: var(--good); color: white; }
+    .option.incorrect { border-color: rgba(185,28,28,.45); background: #fef2f2; }
+    .option.incorrect .letter { background: var(--bad); color: white; }
+    .fill-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 18px 20px 6px; }
+    .fill-row .field { min-height: 48px; }
+    .card-actions { display: flex; justify-content: space-between; gap: 12px; padding: 14px 20px 18px; }
+    .answer-line { color: var(--muted); font-size: 14px; }
+    .answer-line b { color: var(--ink); }
+    .analysis { display: none; margin: 0 20px 20px; padding: 14px 16px; border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0; background: #f3faf8; color: #25413e; line-height: 1.75; }
+    .analysis.open { display: block; }
+    .empty { padding: 38px; text-align: center; border: 1px dashed var(--line); border-radius: 8px; background: rgba(255,255,255,.75); color: var(--muted); }
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: relative; height: auto; padding: 22px 16px; }
+      .main { padding: 18px; }
+      .toolbar { grid-template-columns: 1fr 1fr; }
+      .hero { grid-template-columns: 1fr; }
+      .nav-list { grid-template-columns: repeat(10, 1fr); }
+    }
+    @media (max-width: 620px) {
+      .toolbar { grid-template-columns: 1fr; }
+      .hero-panel { padding: 22px; }
+      .hero h2 { font-size: 24px; }
+      .quick-grid { grid-template-columns: 1fr; }
+      .question-head { flex-direction: column; }
+      .card-actions { flex-direction: column; }
+      .nav-list { grid-template-columns: repeat(6, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">CN</div>
+        <div>
+          <h1>&#35745;&#31639;&#26426;&#32593;&#32476;&#39064;&#24211;</h1>
+          <p class="subtitle">90&#39064;&#32451;&#20064; &middot; &#31572;&#26696;&#35299;&#26512;</p>
+        </div>
+      </div>
+      <section class="side-section">
+        <p class="side-title">&#23398;&#20064;&#36827;&#24230;</p>
+        <div class="stat-grid">
+          <div class="stat"><strong id="answeredCount">0</strong><span>&#24050;&#20316;&#31572;</span></div>
+          <div class="stat"><strong id="correctCount">0</strong><span>&#27491;&#30830;</span></div>
+          <div class="stat"><strong id="wrongCount">0</strong><span>&#38169;&#35823;</span></div>
+          <div class="stat"><strong id="scoreRate">0%</strong><span>&#27491;&#30830;&#29575;</span></div>
+        </div>
+      </section>
+      <section class="side-section">
+        <p class="side-title">&#23436;&#25104;&#24230;</p>
+        <div class="progress"><div id="progressBar" class="progress-bar"></div></div>
+      </section>
+      <section class="side-section">
+        <p class="side-title">&#39064;&#21495;&#23548;&#33322;</p>
+        <div id="questionNav" class="nav-list"></div>
+      </section>
+    </aside>
+    <main class="main">
+      <div class="toolbar">
+        <input id="searchInput" class="field" type="search" placeholder="&#25628;&#32034;&#39064;&#24178;&#12289;&#36873;&#39033;&#12289;&#35299;&#26512;">
+        <select id="typeFilter" class="field"></select>
+        <select id="statusFilter" class="field">
+          <option value="all">&#20840;&#37096;&#29366;&#24577;</option>
+          <option value="unanswered">&#26410;&#20316;&#31572;</option>
+          <option value="correct">&#31572;&#23545;</option>
+          <option value="wrong">&#31572;&#38169;</option>
+        </select>
+        <button id="resetBtn" class="btn secondary" type="button">&#37325;&#32622;</button>
+      </div>
+      <section class="hero">
+        <div class="hero-panel">
+          <h2>&#35745;&#31639;&#26426;&#32593;&#32476;90&#36947;&#35797;&#39064;</h2>
+          <p>&#35206;&#30422; TCP/IP&#12289;OSI &#20998;&#23618;&#12289;IP &#22320;&#22336;&#12289;&#20256;&#36755;&#23618;&#12289;&#38142;&#36335;&#23618;&#12289;&#24212;&#29992;&#23618;&#31561;&#26680;&#24515;&#30693;&#35782;&#28857;&#12290;&#28857;&#20987;&#36873;&#39033;&#21363;&#21487;&#21028;&#39064;&#65292;&#23637;&#24320;&#35299;&#26512;&#21487;&#20197;&#26597;&#30475;&#30693;&#35782;&#28857;&#35828;&#26126;&#12290;</p>
+        </div>
+        <div class="quick-grid">
+          <div class="quick"><b id="totalCount">90</b><span>&#39064;&#30446;&#24635;&#25968;</span></div>
+          <div class="quick"><b id="visibleCount">90</b><span>&#24403;&#21069;&#26174;&#31034;</span></div>
+          <div class="quick"><b id="sectionCount">-</b><span>&#39064;&#22411;&#20998;&#31867;</span></div>
+          <div class="quick"><b>2026-06-23 01:34</b><span>&#29983;&#25104;&#26102;&#38388;</span></div>
+        </div>
+      </section>
+      <section id="questionList" class="question-list"></section>
+    </main>
+  </div>
+  <script>
+    const questions = [{"id":1,"type":"单选题（共50题）","question":"下列关于 TCP 协议描述正确的是（）","options":{"A":"无连接、不可靠","B":"面向连接、可靠传输","C":"面向连接、不可靠","D":"无连接、可靠传输"},"answer":"B","analysis":"TCP是传输层面向连接协议，通过三次握手建立连接、重传、校验、流量拥塞控制实现可靠传输；UDP才是无连接、不可靠。"},{"id":2,"type":"单选题（共50题）","question":"数据链路层传输和处理数据的单位是（）。","options":{"A":"报文段","B":"比特流","C":"数据报","D":"帧"},"answer":"D","analysis":"物理层：比特流；数据链路层：帧；网络层：IP数据报；传输层TCP：报文段、UDP：用户数据报。"},{"id":3,"type":"单选题（共50题）","question":"IP协议的主要功能是（）","options":{"A":"路由选择与逻辑寻址","B":"帧封装","C":"端口寻址","D":"差错校验"},"answer":"A","analysis":"IP协议（网络层）核心：基于IP逻辑地址寻址、路由转发；帧封装是数据链路层，端口寻址是传输层，差错校验是链路层/传输层辅助功能。"},{"id":4,"type":"单选题（共50题）","question":"以太网 MAC 地址、IPv4 地址、IPv6 地址的位宽分别是（）。","options":{"A":"16，56，64","B":"32，32，96","C":"48，32，128","D":"56，48，160"},"answer":"C","analysis":"MAC地址48位（6字节）；IPv4 32位（4字节）；IPv6 128位（16字节）。"},{"id":5,"type":"单选题（共50题）","question":"HTTP协议的主要用途是（）","options":{"A":"传输网页数据，浏览网站","B":"收发电子邮件","C":"文件传输","D":"远程登录"},"answer":"A","analysis":"HTTP：网页浏览；邮件：SMTP/POP3/IMAP；文件传输：FTP；远程登录：Telnet/SSH。"},{"id":6,"type":"单选题（共50题）","question":"在简单的停止-等待协议中，当帧出现丢失时，发送端会永远等待下去，解决这种死锁现象的办法是（）。","options":{"A":"差错校验","B":"帧序号","C":"ACK机制","D":"超时重传机制"},"answer":"D","analysis":"超时计时器：发送帧后启动计时，超时未收到ACK则判定帧丢失，自动重传，打破无限等待死锁。"},{"id":7,"type":"单选题（共50题）","question":"子网掩码 255.255.255.0 对应的默认网段类型是（）","options":{"A":"A类","B":"B类","C":"C类","D":"D类"},"answer":"C","analysis":"A类默认掩码：255.0.0.0；B类默认掩码：255.255.0.0；C类默认掩码：255.255.255.0；D类组播无默认主机掩码。"},{"id":8,"type":"单选题（共50题）","question":"TCP的数据传输采用的是（）方式。","options":{"A":"以字节为单位窗口不变","B":"以字节为单位窗口可变","C":"以报文为单位窗口不变","D":"以报文为单位窗口可变"},"answer":"B","analysis":"TCP是面向字节流，滑动窗口大小由接收方缓冲区动态调整（窗口可变）。"},{"id":9,"type":"单选题（共50题）","question":"互联网的核心协议 IP 属于哪一层协议（）","options":{"A":"物理层","B":"数据链路层","C":"网络层","D":"应用层"},"answer":"C","analysis":"IP是TCP/IP体系网络层核心协议。"},{"id":10,"type":"单选题（共50题）","question":"以太网卡实现的主要功能在（）。","options":{"A":"物理层和数据链路层","B":"数据链路层和网络层","C":"物理层和网络层","D":"数据链路层和应用层"},"answer":"A","analysis":"网卡负责物理层信号收发、数据链路层MAC帧封装/解封装。"},{"id":11,"type":"单选题（共50题）","question":"下列关于 IP 数据包的说法，正确的是（）","options":{"A":"IP 数据包依靠 MAC 地址完成转发","B":"IP 数据包在传输过程中不会拆","C":"IP 数据包依靠 IP 地址完成路由转发","D":"IP 协议是面向连接的协议"},"answer":"C","analysis":"A错误：路由转发依靠IP地址，MAC仅局域网二层转发；B错误：IP数据包超过MTU会分片；D错误：IP无连接。"},{"id":12,"type":"单选题（共50题）","question":"传输层最核心的两大协议是（）","options":{"A":"IP、ARP","B":"HTTP、FTP","C":"TCP、UDP","D":"ICMP、DNS"},"answer":"C","analysis":"TCP、UDP是传输层两大协议；IP/ARP/ICMP属于网络层；HTTP/FTP/DNS属于应用层。"},{"id":13,"type":"单选题（共50题）","question":"万维网上的每个页面都有一个唯一的地址，这些地址统称为（）。","options":{"A":"IP 地址","B":"域名地址","C":"统一资源定位符 URL","D":"WWW 地址"},"answer":"C","analysis":"URL（统一资源定位符）是网页资源唯一标识，包含域名、路径、协议。"},{"id":14,"type":"单选题（共50题）","question":"按照地理覆盖范围划分，校园网属于以下哪类网络（）","options":{"A":"广域网（WAN）","B":"城域网（MAN）","C":"个人区域网（PAN）","D":"局域网（LAN）"},"answer":"D","analysis":"局域网LAN：小范围局部网络（校园、公司内网）；城域网覆盖一座城市；广域网跨城市/国家。"},{"id":15,"type":"单选题（共50题）","question":"哪个 OSI 物理层术语描述了数据从一个点传输到另一点所用的时间（）？","options":{"A":"延迟","B":"带宽","C":"吞吐量","D":"实际吞吐量"},"answer":"A","analysis":"延迟：数据从发送到接收的耗时；带宽是传输速率上限；吞吐量是实际传输速率。"},{"id":16,"type":"单选题（共50题）","question":"以下不属于数据链路层主要功能的是（）","options":{"A":"帧封装与解封装","B":"差错检测","C":"路由选择","D":"流量控制"},"answer":"C","analysis":"路由选择是网络层IP协议功能，其余三项均为数据链路层标准功能。"},{"id":17,"type":"单选题（共50题）","question":"OSI 七层模型中，数据链路层位于第几层（）","options":{"A":"第一层","B":"第二层","C":"第三层","D":"第四层"},"answer":"B","analysis":"OSI七层从上至下：7应用、6表示、5会话、4传输、3网络、2数据链路、1物理。"},{"id":18,"type":"单选题（共50题）","question":"采用半双工通信方式，数据传输的方向为（）。","options":{"A":"可以在两个方向上同时传输","B":"只能在一个方向上传输","C":"可以在两个方向上传输，但不能同时进行","D":"以上均不对"},"answer":"C","analysis":"单工：单向固定传输；半双工：双向可传，但同一时刻只能单向；全双工：双向同时传输。"},{"id":19,"type":"单选题（共50题）","question":"可用于因特网域间路由选择的协议是（）。","options":{"A":"RIP","B":"BGP","C":"OSPF","D":"ARP"},"answer":"B","analysis":"BGP：自治系统间（域间）路由协议；RIP/OSPF：自治系统内（域内）路由；ARP：地址解析协议，非路由协议。"},{"id":20,"type":"单选题（共50题）","question":"网络中 \"带宽\" 通常用来表示（）","options":{"A":"网线的粗细","B":"网络传输数据的速率","C":"网络覆盖范围","D":"电脑内存大小"},"answer":"B","analysis":"带宽指信道最大数据传输速率，单位bit/s，和网线粗细、覆盖范围、内存无关。"},{"id":21,"type":"单选题（共50题）","question":"以太网中，用来标识网络中主机硬件地址的是（）","options":{"A":"IP地址","B":"端口号","C":"域名","D":"MAC地址"},"answer":"D","analysis":"MAC地址固化在网卡，是硬件物理地址；IP是逻辑地址，端口区分应用，域名是IP别名。"},{"id":22,"type":"单选题（共50题）","question":"互联网（Internet）从网络覆盖范围上属于（）","options":{"A":"局域网","B":"城域网","C":"广域网","D":"无线局域网"},"answer":"C","analysis":"Internet跨全球范围，属于广域网WAN。"},{"id":23,"type":"单选题（共50题）","question":"在 TCP 协议中，发送方的窗口大小取决于（）。","options":{"A":"仅接收方允许的窗口","B":"接收方允许的窗口和发送方允许的窗口","C":"接收方允许的窗口和拥塞窗口","D":"发送方允许的窗口和拥塞窗口"},"answer":"C","analysis":"TCP发送窗口 = min(接收方通告窗口rwnd, 拥塞窗口cwnd)，取两者最小值。"},{"id":24,"type":"单选题（共50题）","question":"下列不属于 TCP 服务特点的是（）。","options":{"A":"面向字节流","B":"全双工","C":"可靠","D":"支持广播"},"answer":"D","analysis":"TCP是点对点单播协议，不支持广播、组播；UDP支持广播。"},{"id":25,"type":"单选题（共50题）","question":"TCP 协议中，流量控制的主要目的是（）","options":{"A":"防止网络路由出错","B":"解析域名","C":"加密传输数据","D":"防止发送方发送数据过快，导致接收方缓冲区溢出"},"answer":"D","analysis":"流量控制：协调收发双方速率，避免接收缓冲区满溢出；拥塞控制防止全网过载。"},{"id":26,"type":"单选题（共50题）","question":"UDP 协议的主要特点是（）","options":{"A":"面向连接、开销大","B":"无连接、开销小、传输效率高","C":"有重传机制、可靠性高","D":"仅用于局域网通信"},"answer":"B","analysis":"UDP无连接，头部仅8字节，开销极低，无重传、校验简化，传输速度快。"},{"id":27,"type":"单选题（共50题）","question":"Internet 最核心的协议簇是（）","options":{"A":"TCP/IP","B":"IPX/SPX","C":"NetBEUI","D":"HTTP"},"answer":"A","analysis":"TCP/IP协议簇是互联网标准底层协议栈；HTTP只是其中一个应用层协议。"},{"id":28,"type":"单选题（共50题）","question":"下列关于 IP 数据包的说法，正确的是（）","options":{"A":"IP数据包依靠 MAC 地址完成转发","B":"IP数据包在传输过程中不会拆","C":"IP数据包依靠 IP 地址完成路由转发","D":"IP协议是面向连接的协议"},"answer":"C","analysis":"和第11题完全重复，解析同第11题。"},{"id":29,"type":"单选题（共50题）","question":"对讲机的通信方式属于（）。","options":{"A":"单向通信","B":"双向交替通信","C":"双向同时通信","D":"并行通信"},"answer":"B","analysis":"对讲机同一时间只能一方说话，双向交替，属于半双工通信。"},{"id":30,"type":"单选题（共50题）","question":"在下列传输介质中，错误率最低的是（）。","options":{"A":"同轴电缆","B":"光缆","C":"微波","D":"双绞线"},"answer":"B","analysis":"光纤用光信号传输，不受电磁干扰，误码率远低于铜缆、无线微波。"},{"id":31,"type":"单选题（共50题）","question":"用来组建VLAN的设备是（）。","options":{"A":"交换机","B":"路由器","C":"集线器","D":"网关"},"answer":"A","analysis":"二层交换机支持VLAN虚拟局域网划分；路由器用于跨网段转发。"},{"id":32,"type":"单选题（共50题）","question":"光纤通信中广泛使用、本质属于频分复用的技术是（）","options":{"A":"波分复用","B":"码分复用","C":"空分复用"},"answer":"A","analysis":"波分复用WDM：在光纤内复用不同波长光信号，光学层面的频分复用。"},{"id":33,"type":"单选题（共50题）","question":"标准 A 类 IP 地址的首字节取值范围是（）","options":{"A":"1~126","B":"128~191","C":"192~223","D":"224~239"},"answer":"A","analysis":"A类：1~126（0、127保留）；B类：128~191；C类：192~223；D类组播：224~239。"},{"id":34,"type":"单选题（共50题）","question":"计算机与网络传输介质相连，必备的硬件设备是（）","options":{"A":"显卡","B":"声卡","C":"网卡","D":"摄像头"},"answer":"C","analysis":"网卡（网络适配器）是计算机接入网络介质的必备硬件。"},{"id":35,"type":"单选题（共50题）","question":"路由器最主要的功能是（）","options":{"A":"放大网络信号","B":"连接不同网络、转发数据包","C":"仅连接同一房间电脑","D":"存储大量文件"},"answer":"B","analysis":"路由器三层设备，核心功能：跨不同网络、基于IP路由转发数据包。"},{"id":36,"type":"单选题（共50题）","question":"数据解封装的过程是（）","options":{"A":"段—包—帧—流—数据","B":"流—帧—包—段—数据","C":"数据—包—段—帧—流","D":"数据—段—包—帧—流"},"answer":"B","analysis":"封装（发送端自上而下）：数据→段(TCP)→包(IP)→帧→比特流；解封装（接收端自下而上）：比特流→帧→包→段→数据。"},{"id":37,"type":"单选题（共50题）","question":"交换机工作在 OSI 模型的哪一层（）","options":{"A":"物理层","B":"数据链路层","C":"网络层","D":"应用层"},"answer":"B","analysis":"二层交换机基于MAC地址转发，工作在数据链路层。"},{"id":38,"type":"单选题（共50题）","question":"下列关于 PPP 协议说法错误的是（）","options":{"A":"属于数据链路层协议","B":"常用于拨号上网、广域网点对点通信","C":"支持身份认证功能","D":"属于广播型通信方式"},"answer":"D","analysis":"PPP是点对点协议，一对一传输，不是广播型；其余描述均正确。"},{"id":39,"type":"单选题（共50题）","question":"路由器工作在 OSI 模型的哪一层（）","options":{"A":"数据链路层","B":"传输层","C":"网络层","D":"应用层"},"answer":"C","analysis":"路由器基于IP地址路由，工作在网络层。"},{"id":40,"type":"单选题（共50题）","question":"以太网 MAC 地址的长度为（）","options":{"A":"16 位","B":"32 位","C":"48 位","D":"64 位"},"answer":"C","analysis":"MAC地址固定48比特（6字节）。"},{"id":41,"type":"单选题（共50题）","question":"数据链路层使用（）机制，可检测传输过程中产生的数据错误","options":{"A":"哈希算法","B":"循环冗余校验（CRC）","C":"加密算法","D":"域名解析"},"answer":"B","analysis":"CRC是数据链路层标准差错检测算法；哈希、加密用于安全，域名解析是DNS功能。"},{"id":42,"type":"单选题（共50题）","question":"交换机和集线器相比，下列说法正确的是（）","options":{"A":"集线器独享带宽，效率更高","B":"两者性能完全一致","C":"交换机独享带宽，效率更高","D":"交换机只能用于无线网络"},"answer":"C","analysis":"集线器所有端口共享同一冲突域，带宽共享；交换机每个端口独立冲突域，独享带宽，传输效率更高。"},{"id":43,"type":"单选题（共50题）","question":"ARP协议的主要作用是（）","options":{"A":"将MAC地址解析为IP地址","B":"将IP地址解析为MAC地址","C":"域名解析为IP地址","D":"检测网络连通性"},"answer":"B","analysis":"ARP正向解析（IP→MAC）；RARP反向解析（MAC→IP）；DNS负责域名转IP，ICMP负责连通性检测。"},{"id":44,"type":"单选题（共50题）","question":"用于实现文件上传和下载的协议是（）","options":{"A":"HTTP","B":"FTP","C":"SMTP","D":"DNS"},"answer":"B","analysis":"FTP是文件传输协议；HTTP用于网页浏览，SMTP用于发邮件，DNS用于域名解析。"},{"id":45,"type":"判断题（共24题）","question":"网络带宽越高，代表网络数据传输时延一定越小。（）","options":{},"answer":"否","analysis":"时延包含发送时延、传播时延、排队时延、处理时延；带宽仅减小发送时延，若网络拥堵排队时延极大，高带宽也会出现高时延。"},{"id":46,"type":"判断题（共24题）","question":"IP地址是主机在互联网中的逻辑地址，MAC地址是物理地址。（）","options":{},"answer":"是","analysis":"IP地址三层逻辑地址，可修改；MAC地址固化在网卡，二层物理硬件地址。"},{"id":47,"type":"判断题（共24题）","question":"以太网媒体访问控制技术CSMA/CD的机制是预约带宽。（）","options":{},"answer":"否","analysis":"CSMA/CD是竞争式协议，先听后发、冲突重传，无带宽预约；TDMA才是预约式。"},{"id":48,"type":"判断题（共24题）","question":"以太网是根据MAC地址来区分不同的设备。（）","options":{},"answer":"是","analysis":"以太网帧头部携带源/目的MAC，交换机依靠MAC转发区分设备。"},{"id":49,"type":"判断题（共24题）","question":"ARP协议的作用是根据已知IP地址 查询对应的MAC地址。（）","options":{},"answer":"是","analysis":"ARP标准正向解析功能。"},{"id":50,"type":"判断题（共24题）","question":"以太网采用面向连接的工作方式，对发送的数据帧不编号，也不要求对方发回确认。（）","options":{},"answer":"否","analysis":"以太网是无连接服务，题干\"面向连接\"描述错误。"},{"id":51,"type":"判断题（共24题）","question":"UDP协议支持流量控制和拥塞控制机制。（）","options":{},"answer":"否","analysis":"只有TCP具备流量、拥塞控制；UDP无任何可靠保障机制。"},{"id":52,"type":"判断题（共24题）","question":"曼彻斯特编码是能从数据信号波形中提取同步信号的典型编码。（）","options":{},"answer":"是","analysis":"曼彻斯特编码每个码元中间存在电平跳变，自带同步时钟，无需单独同步线。"},{"id":53,"type":"判断题（共24题）","question":"OSI七层体系结构中，每层都利用下层提供的服务，同时为上层提供服务。（）","options":{},"answer":"是","analysis":"分层模型核心逻辑：上层调用下层服务，下层为上层提供接口。"},{"id":54,"type":"判断题（共24题）","question":"集线器（Hub）可以对数据包进行存储转发，并能够隔离冲突域。（）","options":{},"answer":"否","analysis":"集线器工作在物理层，仅放大信号、广播转发，不能存储转发，无法隔离冲突域；交换机才具备该能力。"},{"id":55,"type":"判断题（共24题）","question":"报文交换在数据传输过程中需要独占整条通信线路，实时性优于分组交换。（）","options":{},"answer":"否","analysis":"独占线路是电路交换；报文交换需要完整存储整个报文，时延更大，实时性差于分组交换。"},{"id":56,"type":"判断题（共24题）","question":"码元传输速率（波特率）和数据传输速率在任何情况下数值都相等。（）","options":{},"answer":"否","analysis":"数据速率=波特率×每个码元携带比特数；多进制调制下一个码元承载多比特，两者数值不等。"},{"id":57,"type":"判断题（共24题）","question":"报文交换在数据传输过程中需要独占整条通信线路，实时性优于分组交换。（）","options":{},"answer":"否","analysis":"与55题完全重复，解析同上。"},{"id":58,"type":"判断题（共24题）","question":"单工通信指通信双方可以同时发送和接收数据。（）","options":{},"answer":"否","analysis":"单工只能单向固定传输；全双工才支持同时收发。"},{"id":59,"type":"判断题（共24题）","question":"传输控制协议（TCP）属于运输层协议，而用户数据报协议（UDP）属于网络层协议。（）","options":{},"answer":"否","analysis":"TCP、UDP全部属于传输层（运输层）协议。"},{"id":60,"type":"判断题（共24题）","question":"光纤依靠光信号传输数据，不受电磁干扰，传输距离远、速率高。（）","options":{},"answer":"是","analysis":"光纤传输介质核心优势。"},{"id":61,"type":"判断题（共24题）","question":"路由选择分为静态路由和动态路由，静态路由需要人工手动配置。（）","options":{},"answer":"是","analysis":"静态路由手动写路由表；动态路由依靠RIP/OSPF/BGP自动学习路由。"},{"id":62,"type":"判断题（共24题）","question":"路由器工作在网络层，依据MAC地址转发数据包。（）","options":{},"answer":"否","analysis":"路由器三层设备，依据IP地址转发；MAC地址是二层交换机使用。"},{"id":63,"type":"判断题（共24题）","question":"电路交换建立连接后，通信双方可持续传输数据，不存在存储转发过程。（）","options":{},"answer":"是","analysis":"电路交换建立专用物理通路，数据直通，无需存储转发；分组/报文交换才会存储转发。"},{"id":64,"type":"判断题（共24题）","question":"物理层主要负责传输比特流，不处理数据帧的差错校验。（）","options":{},"answer":"是","analysis":"差错检测、帧封装属于数据链路层，物理层仅处理0/1比特信号。"},{"id":65,"type":"判断题（共24题）","question":"TCP采用三次握手建立连接，四次挥手释放连接。（）","options":{},"answer":"是","analysis":"TCP连接与断开标准流程。"},{"id":66,"type":"判断题（共24题）","question":"子网划分的目的节约IP地址，同时划分网络范围、便于管理。（）","options":{},"answer":"是","analysis":"子网划分拆分大网段，减少IP浪费，隔离广播域，简化网络管理。"},{"id":67,"type":"判断题（共24题）","question":"IPv4地址由48位二进制组成，通常采用点分十进制表示。（）","options":{},"answer":"否","analysis":"IPv4地址32位，MAC地址才是48位。"},{"id":68,"type":"判断题（共24题）","question":"网络层的主要作用是实现相邻节点之间的帧传输与差错检测。（）","options":{},"answer":"否","analysis":"相邻节点帧传输、差错检测是数据链路层功能；网络层负责跨网段路由转发。"},{"id":69,"type":"填空题（共16题）","question":"传输层的两个重要协议____和 ____。","options":{},"answer":"TCP；UDP","analysis":""},{"id":70,"type":"填空题（共16题）","question":"IP地址二级结构为网络号+主机号，三级结构分为网络号+子网号+主机号，子网划分本质是借用主机位来划分出____。","options":{},"answer":"子网","analysis":""},{"id":71,"type":"填空题（共16题）","question":"TCP协议通过确认与____机制保证数据传输的可靠性。","options":{},"answer":"重传","analysis":""},{"id":72,"type":"填空题（共16题）","question":"数据链路层使用的信道主要有____和 ____。","options":{},"answer":"点到点信道；广播信道","analysis":""},{"id":73,"type":"填空题（共16题）","question":"三种数据交换技术分别是电路交换、____ 和报文交换。","options":{},"answer":"分组交换","analysis":""},{"id":74,"type":"填空题（共16题）","question":"运输层通过____号来区分主机上不同的应用进程。","options":{},"answer":"端口","analysis":""},{"id":75,"type":"填空题（共16题）","question":"UDP报文首部长度固定为____ 字节。","options":{},"answer":"8","analysis":""},{"id":76,"type":"填空题（共16题）","question":"流量控制实际上是使发送方的发送____不至于超过接收方能承受的能力。","options":{},"answer":"速率","analysis":""},{"id":77,"type":"填空题（共16题）","question":"TCP报文段中，____字段用来标识本报文段的数据起始序号。","options":{},"answer":"序号","analysis":""},{"id":78,"type":"填空题（共16题）","question":"能够根据IP地址转发分组的网络设备是____。","options":{},"answer":"路由器","analysis":""},{"id":79,"type":"填空题（共16题）","question":"IEEE 802.11无线局域网所采用的MAC协议是____协议。","options":{},"answer":"CSMA/CD","analysis":""},{"id":80,"type":"填空题（共16题）","question":"物理层传输的数据单位是____ 。","options":{},"answer":"比特（比特流）","analysis":""},{"id":81,"type":"填空题（共16题）","question":"光纤分为单模光纤和____ 光纤两类。","options":{},"answer":"多模","analysis":""},{"id":82,"type":"填空题（共16题）","question":"按照覆盖范围划分，计算机网络可分为局域网、____和广域网。","options":{},"answer":"城域网（MAN）","analysis":""},{"id":83,"type":"填空题（共16题）","question":"域名系统DNS主要用来实现域名与____之间的转换。","options":{},"answer":"IP地址","analysis":""},{"id":84,"type":"填空题（共16题）","question":"IPv6相比IPv4的变化之一是其IP地址的位数变为____bit。","options":{},"answer":"128","analysis":""},{"id":85,"type":"单选题（共50题）","question":"使用集线器的以太网在逻辑上是一个（）。","options":{"A":"交换式网络","B":"总线型网络","C":"环型网络","D":"星型网络"},"answer":"B","analysis":"集线器物理布线是星型，但逻辑上共享一条总线，属于总线型网络。"},{"id":86,"type":"单选题（共50题）","question":"人们常用Ping命令来测试两个主机之间的连通性，该命令使用了下列那种协议（）。","options":{"A":"UDP","B":"ICMP","C":"DNS","D":"ARP"},"answer":"B","analysis":"ICMP是网络层控制报文协议，Ping依靠ICMP回声请求/应答报文探测连通性。"},{"id":87,"type":"单选题（共50题）","question":"域名服务DNS的正向解析是：（）","options":{"A":"将域名转换为物理地址","B":"将域名转换为IP地址","C":"将IP地址转换为物理地址","D":"将IP地址转换为域名"},"answer":"B","analysis":"正向解析：域名→IP；反向解析：IP→域名；IP转MAC是ARP。"},{"id":88,"type":"单选题（共50题）","question":"因特网上的数据交换方式是（）。","options":{"A":"电路交换","B":"报文交换","C":"分组交换","D":"光交换"},"answer":"C","analysis":"互联网核心采用分组交换；电路交换用于老式电话，报文交换用于早期电报。"},{"id":89,"type":"单选题（共50题）","question":"多个用户可以在同一个信道上的不同时刻共享整个带宽资源的方法是（）。","options":{"A":"时分复用","B":"频分复用","C":"码分复用","D":"波分复用"},"answer":"A","analysis":"时分复用（TDM）按时间片分配信道，不同时刻分给不同用户；频分/码分/波分是同一时刻共享。"},{"id":90,"type":"单选题（共50题）","question":"下列传输介质中带宽最宽、信号衰减最小、抗干扰能力最强的传输介质是（）。","options":{"A":"双绞线","B":"光纤","C":"无线信道","D":"同轴电缆"},"answer":"B","analysis":"光纤依靠光信号传输，无电磁干扰，传输距离远、带宽远高于铜缆与无线。"}];
+    const state = JSON.parse(localStorage.getItem('networkQuizState') || '{}');
+    const el = {
+      list: document.getElementById('questionList'),
+      nav: document.getElementById('questionNav'),
+      search: document.getElementById('searchInput'),
+      type: document.getElementById('typeFilter'),
+      status: document.getElementById('statusFilter'),
+      reset: document.getElementById('resetBtn'),
+      answered: document.getElementById('answeredCount'),
+      correct: document.getElementById('correctCount'),
+      wrong: document.getElementById('wrongCount'),
+      rate: document.getElementById('scoreRate'),
+      progress: document.getElementById('progressBar'),
+      total: document.getElementById('totalCount'),
+      visible: document.getElementById('visibleCount'),
+      sectionCount: document.getElementById('sectionCount')
+    };
+    function escapeHtml(value) {
+      return String(value || '').replace(/[&<>"']/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[ch]));
+    }
+    function normalize(value) { return String(value || '').toLowerCase().trim(); }
+    function answerKey(value) {
+      return normalize(value).replace(/[\uff1b\uff0c\u3001,\/]+/g, ';').replace(/\s+/g, '').replace(/[\uff08\uff09()]/g, '');
+    }
+    function isCorrect(question, picked) {
+      return answerKey(picked) === answerKey(question.answer);
+    }
+    function getStatus(question) {
+      const picked = state[question.id];
+      if (!picked) return 'unanswered';
+      return isCorrect(question, picked) ? 'correct' : 'wrong';
+    }
+    function saveState() { localStorage.setItem('networkQuizState', JSON.stringify(state)); }
+    function setupFilters() {
+      const types = [...new Set(questions.map(q => q.type || '\u672a\u5206\u7c7b'))];
+      el.type.innerHTML = '<option value="all">\u5168\u90e8\u9898\u578b</option>' + types.map(type => `<option value="${escapeHtml(type)}">${escapeHtml(type)}</option>`).join('');
+      el.total.textContent = questions.length;
+      el.sectionCount.textContent = types.length;
+    }
+    function filteredQuestions() {
+      const keyword = normalize(el.search.value);
+      const type = el.type.value;
+      const status = el.status.value;
+      return questions.filter(q => {
+        const haystack = normalize([q.question, q.analysis, ...Object.values(q.options || {})].join(' '));
+        const typeOk = type === 'all' || q.type === type;
+        const statusOk = status === 'all' || getStatus(q) === status;
+        return typeOk && statusOk && (!keyword || haystack.includes(keyword));
+      });
+    }
+    function renderStats() {
+      let answered = 0;
+      let correct = 0;
+      questions.forEach(q => {
+        const picked = state[q.id];
+        if (picked) {
+          answered += 1;
+          if (isCorrect(q, picked)) correct += 1;
+        }
+      });
+      const wrong = answered - correct;
+      const rate = answered ? Math.round(correct / answered * 100) : 0;
+      el.answered.textContent = answered;
+      el.correct.textContent = correct;
+      el.wrong.textContent = wrong;
+      el.rate.textContent = rate + '%';
+      el.progress.style.width = Math.round(answered / questions.length * 100) + '%';
+    }
+    function renderNav() {
+      el.nav.innerHTML = questions.map(q => {
+        const status = getStatus(q);
+        const extra = status === 'correct' ? 'done' : status === 'wrong' ? 'wrong' : '';
+        return `<button class="nav-btn ${extra}" type="button" data-jump="${q.id}">${q.id}</button>`;
+      }).join('');
+    }
+    function renderQuestions() {
+      const items = filteredQuestions();
+      el.visible.textContent = items.length;
+      if (!items.length) {
+        el.list.innerHTML = '<div class="empty">\u6ca1\u6709\u7b26\u5408\u6761\u4ef6\u7684\u9898\u76ee</div>';
+        return;
+      }
+      el.list.innerHTML = items.map(q => {
+        const picked = state[q.id] || '';
+        const answered = Boolean(picked);
+        const baseOptions = Object.entries(q.options || {});
+        const optionEntries = baseOptions.length ? baseOptions : (q.answer === '\u662f' || q.answer === '\u5426' ? [['\u662f', '\u662f'], ['\u5426', '\u5426']] : []);
+        const options = optionEntries.map(([key, text]) => {
+          let cls = 'option';
+          if (answered && isCorrect(q, key)) cls += ' correct';
+          if (answered && key === picked && !isCorrect(q, key)) cls += ' incorrect';
+          return `<label class="${cls}"><input type="radio" name="q${q.id}" value="${key}" ${picked === key ? 'checked' : ''}><span class="letter">${key}</span><span>${escapeHtml(text)}</span></label>`;
+        }).join('');
+        const answerLine = answered ? `\u4f60\u7684\u7b54\u6848\uff1a<b>${escapeHtml(picked)}</b> \u00b7 \u6b63\u786e\u7b54\u6848\uff1a<b>${escapeHtml(q.answer)}</b>` : (optionEntries.length ? '\u8bf7\u9009\u62e9\u4e00\u4e2a\u7b54\u6848' : '\u8bf7\u586b\u5199\u7b54\u6848\u540e\u6838\u5bf9');
+        const answerArea = optionEntries.length ? `<div class="options" data-id="${q.id}">${options}</div>` : `<div class="fill-row" data-id="${q.id}"><input class="field" type="text" value="${escapeHtml(picked)}" placeholder="\u8f93\u5165\u7b54\u6848"><button class="btn" type="button" data-check="${q.id}">\u6838\u5bf9</button></div>`;
+        return `<article class="question-card" id="q${q.id}"><div class="question-head"><div class="question-title"><div class="qid">${q.id}</div><p class="question-text">${escapeHtml(q.question)}</p></div><span class="tag">${escapeHtml(q.type || '\u9898\u76ee')}</span></div>${answerArea}<div class="card-actions"><div class="answer-line">${answerLine}</div><button class="btn secondary" type="button" data-analysis="${q.id}">\u67e5\u770b\u89e3\u6790</button></div><div class="analysis" id="analysis-${q.id}"><b>\u89e3\u6790\uff1a</b>${escapeHtml(q.analysis || '\u6682\u65e0\u89e3\u6790')}</div></article>`;
+      }).join('');
+    }
+    function rerender() { renderStats(); renderNav(); renderQuestions(); }
+    el.list.addEventListener('change', event => {
+      const input = event.target.closest('input[type="radio"]');
+      if (!input) return;
+      const id = input.closest('.options').dataset.id;
+      state[id] = input.value;
+      saveState();
+      rerender();
+      const card = document.getElementById('q' + id);
+      if (card) card.scrollIntoView({ block: 'nearest' });
+    });
+    el.list.addEventListener('click', event => {
+      const check = event.target.closest('[data-check]');
+      if (check) {
+        const row = check.closest('.fill-row');
+        const input = row.querySelector('input');
+        const value = input.value.trim();
+        if (!value) return;
+        state[check.dataset.check] = value;
+        saveState();
+        rerender();
+        document.getElementById('q' + check.dataset.check)?.scrollIntoView({ block: 'nearest' });
+        return;
+      }
+      const btn = event.target.closest('[data-analysis]');
+      if (!btn) return;
+      const panel = document.getElementById('analysis-' + btn.dataset.analysis);
+      panel.classList.toggle('open');
+      btn.textContent = panel.classList.contains('open') ? '\u6536\u8d77\u89e3\u6790' : '\u67e5\u770b\u89e3\u6790';
+    });
+    el.nav.addEventListener('click', event => {
+      const btn = event.target.closest('[data-jump]');
+      if (!btn) return;
+      const target = document.getElementById('q' + btn.dataset.jump);
+      if (!target) {
+        el.search.value = '';
+        el.type.value = 'all';
+        el.status.value = 'all';
+        renderQuestions();
+        requestAnimationFrame(() => document.getElementById('q' + btn.dataset.jump)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+        return;
+      }
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    [el.search, el.type, el.status].forEach(control => {
+      control.addEventListener('input', renderQuestions);
+      control.addEventListener('change', renderQuestions);
+    });
+    el.reset.addEventListener('click', () => {
+      if (!confirm('\u786e\u5b9a\u6e05\u7a7a\u5168\u90e8\u7b54\u9898\u8bb0\u5f55\u5417\uff1f')) return;
+      Object.keys(state).forEach(key => delete state[key]);
+      saveState();
+      rerender();
+    });
+    setupFilters();
+    rerender();
+  </script>
+</body>
+</html>
